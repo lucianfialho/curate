@@ -1,0 +1,29 @@
+# Web framework and API
+fastapi==0.109.2
+uvicorn==0.27.1
+pydantic==1.10.13  # Using older version for Python 3.13 compatibility
+httpx==0.26.0
+
+# Data processing
+pandas==2.2.0
+numpy==1.26.4
+scikit-learn==1.4.0
+
+# Web scraping and data collection
+beautifulsoup4==4.12.2
+requests==2.31.0
+feedparser==6.0.10
+
+# NLP and sentiment analysis
+nltk==3.8.1
+textblob==0.17.1
+transformers==4.38.1
+# torch package temporarily removed until Python 3.13 compatible version is available
+
+# Development tools
+pytest==7.4.3
+black==23.12.1
+flake8==6.1.0
+
+# Utilities
+python-dotenv==1.0.0
