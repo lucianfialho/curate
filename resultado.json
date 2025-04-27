@@ -2,158 +2,97 @@
   "content": {
     "news": [
       {
-        "title": "Open challenges in LLM research",
-        "description": "[LinkedIn discussion, Twitter thread]\nNever before in my life had I seen so many smart people working on the same goal: making LLMs better. After talking to many people working in both industry and academia, I noticed the 10 major research directions that emerged. The first two directions, hallucinations and context learning, are probably the most talked about today. I’m the most excited about numbers 3 (multimodality), 5 (new architecture), and 6 (GPU alternatives).\n1. Reduce and measure hallucinations\nHallucination is a heavily discussed topic already so I’ll be quick. Hallucination happens when an AI model makes stuff up. For many creative use cases, hallucination is a feature. However, for most other use cases, hallucination is a bug. I was at a panel on LLM with Dropbox, Langchain, Elastics, and Anthropic recently, and the #1 roadblock they see for companies to adopt LLMs in production is hallucination.\nMitigating hallucination and developing metrics to measure hallucination is a blossoming research topic, and I’ve seen many startups focus on this problem. There are also ad-hoc tips to reduce hallucination, such as adding more context to the prompt, chain-of-thought, self-consistency, or asking your model to be concise in its response.\nTo learn more about hallucination:\n\nSurvey of Hallucination in Natural Language Generation (Ji et al., 2022)\nHow Language Model Hallucinations Can Snowball (Zhang et al., 2023)\nA Multitask, Multilingual, Multimodal Evaluation of ChatGPT on Reasoning, Hallucination, and Interactivity (Bang et al., 2023)\nContrastive Learning Reduces Hallucination in Conversations (Sun et al., 2022)\nSelf-Consistency Improves Chain of Thought Reasoning in Language Models (Wang et al., 2022)\nSelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models (​​Manakul et al., 2023)\nA simple example of fact-checking and hallucination by NVIDIA’s NeMo-Guardrails\n\n2. Optimize context length and context construction\nA vast majority of questions require context. For example, if we ask ChatGPT: “What’s the best Vietnamese restaurant?”, the context needed would be “where” because the best Vietnamese restaurant in Vietnam would be different from the best Vietnamese in the US.\nAccording to this cool paper SituatedQA (Zhang & Choi, 2021), a significant proportion of information-seeking questions have context-dependent answers, e.g. roughly 16.5% of the Natural Questions NQ-Open dataset. Personally, I suspect that this percentage would be even higher for enterprise use cases. For example, say a company builds a chatbot for customer support, for this chatbot to answer any customer question about any product, the context needed might be that customer’s history or that product’s information.\nBecause the model “learns” from the context provided to it, this process is also called context learning.\n\n\n\n\n\n\nContext length is especially important for RAG – Retrieval Augmented Generation (Lewis et al., 2020) – which has emerged to be the predominant pattern for LLM industry use cases. For those not yet swept away in the RAG rage, RAG works in two phases:\nPhase 1: chunking (also known as indexing)\n\nGather all the documents you want your LLM to use\nDivide these documents into chunks that can be fed into your LLM to generate embeddings and store these embeddings in a vector database.\n\nPhase 2: querying\n\nWhen user sends a query, like “Does my insurance policy pay for this drug X”, your LLM converts this query into an embedding, let’s call it QUERY_EMBEDDING\nYour vector database fetches the chunks whose embeddings are the most similar to QUERY_EMBEDDING\n\nScreenshot from Jerry Liu’s talk on LlamaIndex (2023)\n\n\n\n\n\n\nThe longer the context length, the more chunks we can squeeze into the context. The more information the model has access to, the better its response will be, right?\nNot always. How much context a model can use and how efficiently that model will use it are two different questions. In parallel with the effort to increase model context length is the effort to make the context more efficient. Some people call it “prompt engineering” or “prompt construction”. For example, a paper that has made the rounds recently is about how models are much better at understanding information at the beginning and the end of the index rather than in the middle of it – Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023).\n3. Incorporate other data modalities\nMultimodality, IMO, is so powerful and yet so underrated. There are many reasons for multimodality.\nFirst, there are many use cases where multimodal data is required, especially in industries that deal with a mixture of data modalities such as healthcare, robotics, e-commerce, retail, gaming, entertainment, etc. Examples:\n\nOftentimes, medical predictions require both text (e.g. doctor’s notes, patients’ questionnaires) and images (e.g. CT, X-ray, MRI scans).\nProduct metadata often contains images, videos, descriptions, and even tabular data (e.g. production date, weight, color). You might want to automatically fill in missing product information based on users’ reviews or product photos. You might want to enable users to search for products using visual information, like shape or color.\n\nSecond, multimodality promises a big boost in model performance. Shouldn’t a model that can understand both text and images perform better than a model that can only understand text? Text-based models require so much text that there’s a realistic concern that we’ll soon run out of Internet data to train text-based models. Once we run out of text, we’d need to leverage other data modalities.\n\n\n\n\n    Flamingo architecture (Alayrac et al., 2022)\n\n\nOne use case I’m especially excited about is that multimodality can enable visually impaired people to browse the Internet and navigate the real world.\nCool multimodal work:\n\n[CLIP] Learning Transferable Visual Models From Natural Language Supervision (OpenAI, 2021)\nFlamingo: a Visual Language Model for Few-Shot Learning (DeepMind, 2022)\nBLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models (Salesforce, 2023)\nKOSMOS-1: Language Is Not All You Need: Aligning Perception with Language Models (Microsoft, 2023)\nPaLM-E: An embodied multimodal language model (Google, 2023)\nLLaVA: Visual Instruction Tuning (Liu et al., 2023)\nNeVA: NeMo Vision and Language Assistant (NVIDIA, 2023)\n\nI’ve been working on a post on multimodality that hopefully I can share soon!\n4. Make LLMs faster and cheaper\nWhen GPT-3.5 first came out in late November 2022, many people had concerns about latency and cost of using it in production. However, latency/cost analysis has changed rapidly since then. Within half a year, the community found a way to create a model that came pretty close to GPT-3.5 in terms of performance, yet required just under 2% of GPT-3.5’s memory footprint.\nMy takeaway: if you create something good enough, people will figure out a way to make it fast and cheap.\n\n\n\nDate\n\nModel\n\n# params\n\nQuantization\n\nMemory to finetune\n\nCan be trained on\n\n\n\nNov 2022\n   \nGPT-3.5\n   \n175B\n   \n16-bit\n   \n375GB\n   \nMany, many machines\n   \n\n\nMar 2023\n   \nAlpaca 7B\n\n7B\n   \n16-bit\n   \n15GB\n   \nGaming desktop\n   \n\n\nMay 2023\n   \nGuanaco 7B\n\n7B\n   \n4-bit\n   \n6GB\n   \nAny Macbook\n   \n\n\n\nBelow is Guanaco 7B’s performance compared to ChatGPT GPT-3.5 and GPT-4, as reported in the Guanco paper. Caveat: in general, the performance comparison is far from perfect. LLM evaluation is very, very hard.\n\n\n\n\n\n\nFour years ago, when I started working on the notes that would later become the section Model Compression for the book Designing Machine Learning Systems, I wrote about four major techniques for model optimization/compression:\n\nQuantization: by far the most general model optimization method. Quantization reduces a model’s size by using fewer bits to represent its parameters, e.g. instead of using 32 bits to represent a float, use only 16 bits, or even 4 bits.\nKnowledge distillation: a method in which a small model (student) is trained to mimic a larger model or ensemble of models (teacher).\nLow-rank factorization: the key idea here is to replace high-dimensional tensors with lower-dimensional tensors to reduce the number of parameters. For example, you can decompose a 3x3 tensor into the product of a 3x1 and a 1x3 tensor, so that instead of having 9 parameters, you have only 6 parameters.\nPruning\n\nAll these four techniques are still relevant and popular today. Alpaca was trained using knowledge distillation. QLoRA used a combination of low-rank factorization and quantization.\n5. Design a new model architecture\nSince AlexNet in 2012, we’ve seen many architectures go in and out of fashion, including LSTM, seq2seq. Compared to those, Transformer is incredibly sticky. It’s been around since 2017. It’s a big question mark how much longer this architecture will be in vogue.\nDeveloping a new architecture to outperform Transformer isn’t easy. Transformer has been so heavily optimized over the last 6 years. This new architecture has to be performing at the scale that people care about today, on the hardware that people care about. Side note: Transformer was originally designed by Google to run fast on TPUs, and only later optimized on GPUs.\nThere was a lot of excitement in 2021 around S4 from Chris Ré’s lab – see Efficiently Modeling Long Sequences with Structured State Spaces (Gu et al., 2021). I’m not quite sure what happened to it. Chris Ré’s lab is still very invested in developing new architecture, most recently with their architecture Monarch Mixer (Fu et al., 2023) in collaboration with the startup Together.\nTheir key idea is that for the existing Transformer architecture, the complexity of attention is quadratic in sequence length and the complexity of an MLP is quadratic in model dimension. An architecture with subquadratic complexity would be more efficient.\n\n\n\n\n\n\nI’m sure many other labs are working on this idea, though I’m not aware of any attempt that has been made public. If you know of any, please let me know!\n6. Develop GPU alternatives\nGPU has been the dominating hardware for deep learning ever since AlexNet in 2012. In fact, one commonly acknowledged reason for AlexNet’s popularity is that it was the first paper to successfully use GPUs to train neural networks. Before GPUs, if you wanted to train a model at AlexNet’s scale, you’d have to use thousands of CPUs, like the one Google released just a few months before AlexNet. Compared to thousands of CPUs, a couple of GPUs were a lot more accessible to Ph.D. students and researchers, setting off the deep learning research boom.\nIn the last decade, many, many companies, both big corporations, and startups, have attempted to create new hardware for AI. The most notable attempts are Google’s TPUs, Graphcore’s IPUs (what’s happening with IPUs?), and Cerebras. SambaNova raised over a billion dollars to develop new AI chips but seems to have pivoted to being a generative AI platform.\nFor a while, there has been a lot of anticipation around quantum computing, with key players being:\n\nIBM’s QPU\nGoogle’s Quantum computer reported a major milestone in quantum error reduction earlier this year in Nature. Its quantum virtual machine is publicly accessible via Google Colab\nResearch labs such as MIT Center for Quantum Engineering, Max Planck Institute of Quantum Optics, Chicago Quantum Exchange, Oak Ridge National Laboratory, etc.\n\nAnother direction that is also super exciting is photonic chips. This is the direciton I know the least about – so please correct me if I’m wrong. Existing chips today use electricity to move data, which consumes a lot of power and also incurs latency. Photonic chips use photons to move data, harnessing the speed of light for faster and more efficient compute. Various startups in this space have raised hundreds of millions of dollars, including Lightmatter ($270M), Ayar Labs ($220M), Lightelligence ($200M+), and Luminous Computing ($115M).\nBelow is the timeline of advances of the three major methods in photonic matrix computation, from the paper Photonic matrix multiplication lights up photonic accelerator and beyond (Zhou et al., Nature 2022). The three different methods are plane light conversion (PLC), Mach–Zehnder interferometer (MZI), and wavelength division multiplexing (WDM).\n\n\n\n\n\n\n7. Make agents usable\nAgents are LLMs that can take actions, like browsing the Internet, sending emails, making reservations, etc. Compared to other research directions in this post, this might be the youngest direction.\nBecause of the novelty and the massive potential, there’s a feverish obsession with agents. Auto-GPT is now the 25th most popular GitHub repo ever by the number of stars. GPT-Engineering is another popular repo.\nDespite the excitement, there is still doubt about whether LLMs are reliable and performant enough to be entrusted with the power to act.\nOne use case that has emerged though is the use of agents for social studies, like the famous Stanford experiment that shows that a small society of generative agents produces emergent social behaviors: for example, starting with only a single user-specified notion that one agent wants to throw a Valentine’s Day party, the agents autonomously spread invitations to the party over the next two days, make new acquaintances, ask each other out on dates to the party … (Generative Agents: Interactive Simulacra of Human Behavior, Park et al., 2023)\nThe most notable startup in this area is perhaps Adept, founded by two Transformer co-authors (though both already left) and an ex-OpenAI VP, and has raised almost half a billion dollars to date. Last year, they had a demo showing their agent browsing the Internet and adding a new account to Salesforce. I’m looking forward to seeing their new demos 🙂\n\n\n\n\n\n8. Improve learning from human preference\nRLHF, Reinforcement Learning from Human Preference, is cool but kinda hacky. I wouldn’t be surprised if people figure out a better way to train LLMs. There are many open questions for RLHF, such as:\n1. How to mathematically represent human preference?\nCurrently, human preference is determined by comparison: human labeler determines if response A is better than response B. However, it doesn’t take into account how much better response A is than response B.\n2. What’s human preference?\nAnthropic measured the quality of their model’s responses along the three axes: helpful, honest, and harmless. See Constitutional AI: Harmlessness from AI Feedback (Bai et al., 2022).\nDeepMind tries to generate responses that please the most people. See Fine-tuning language models to find agreement among humans with diverse preferences, (Bakker et al., 2022).\nAlso, do we want AIs that can take a stand or a vanilla AI that shies away from any potentially controversial topic?\n3. Whose preference is “human” preference, taking into account the differences in cultures, religions, political leanings, etc.?\nThere are a lot of challenges in obtaining training data that can be sufficiently representative of all the potential users.\nFor example, for OpenAI’s InstructGPT data, there was no labeler above 65 years old. Labelers are predominantly Filipino and Bangladeshi. See InstructGPT: Training language models to follow instructions with human feedback (Ouyang et al., 2022).\n\n\n\n\n\n\nCommunity-led efforts, while admirable in their intention, can lead to biased data. For example, for the OpenAssistant dataset, 201 out of 222 (90.5%) respondents identify as male. Jeremy Howard has a great Twitter thread on this.\n\n\n\n\n\n\n9. Improve the efficiency of the chat interface\nEver since ChatGPT, there have been multiple discussions on whether chat is a suitable interface for a wide range of tasks.\n\nNatural language is the lazy user interface (Austin Z. Henley, 2023)\nWhy Chatbots Are Not the Future (Amelia Wattenberger, 2023)\nWhat Types of Questions Require Conversation to Answer? A Case Study of AskReddit Questions (Huang et al., 2023)\nAI chat interfaces could become the primary user interface to read documentation (Tom Johnson, 2023)\nInteracting with LLMs with Minimal Chat (Eugene Yan, 2023)\n\nHowever, this is not a new discussion. In many countries, especially in Asia, chat has been used as the interface for super apps for about a decade. Dan Grover had this discussion back in 2014.\n\n\n\n\n    Chat as a universal interface for Chinese apps (Dan Grover, 2014)\n\n\nThe discussion again got tense in 2016, when many people thought apps were dead and chatbots would be the future.\n\nOn chat as interface (Alistair Croll, 2016)\nIs the Chatbot Trend One Big Misunderstanding? (Will Knight, 2016)\nBots won’t replace apps. Better apps will replace apps (Dan Grover, 2016)\n\nPersonally, I love the chat interface because of the following reasons:\n\nChat is an interface that everyone, even people without previous exposure to computers or the Internet, can learn to use quickly. When I volunteered at a low-income residential neighborhood (are we allowed to say slum?) in Kenya in the early 2010s, I was blown away by how comfortable everyone there was with doing banking on their phone, via texts. No one in that neighborhood had a computer.\nChat interface is accessible. You can use voice instead of text if your hands are busy.\nChat is also an incredibly robust interface – you can give it any request and it’ll give back a response, even if the response isn’t good.\n\nHowever, there are certain areas that I think the chat interface can be improved upon.\n\n\nMultiple messages per turn\nCurrently, we pretty much assume one message per turn. This is not how my friends and I text. Often, I need multiple messages to complete my thought, because I need to insert different data (e.g. images, locations, links), I forgot something in the previous messages, or I just don’t feel like putting everything into a massive paragraph.\n\n\nMultimodal input\nIn the realm of multimodal applications, most energy is spent on building better models, and very little on building better interfaces. Take Nvidia’s NeVA chatbot. I’m not a UX expert, but I suspect there might be room for UX improvement here.\nP.S. Sorry the NeVA team for calling you out. Even with this interface, your work is super cool!\n\n\n\n\n\n\n\n\nIncorporating generative AI into your workflows\nLinus Lee covered this point well in his talk Generative AI interface beyond chats. For example, if you want to ask a question about a column of a chart you’re working on, you should be able just point to that column and ask a question.\n\n\nEditing and deletion of messages\nHow would editing or deletion of a user input change the conversation flow with the chatbot?\n\n\n10. Build LLMs for non-English languages\nWe know that current English-first LLMs don’t work well for many other languages, both in terms of performance, latency, and speed. See:\n\nChatGPT Beyond English: Towards a Comprehensive Evaluation of Large Language Models in Multilingual Learning (Lai et al., 2023)\nAll languages are NOT created (tokenized) equal (Yennie Jun, 2023)\n\n\n\n\n\n\n\nHere are some initiatives that I’m aware of. If you have pointers to others, I’d be happy to include them here.\n\nAya: An Open Science Initiative to Accelerate Multilingual AI Progress\nSymato: Vietnamese ChatGPT\nCabrita: Finetuning InstructLLaMA with portuguese data\nLuotuo-Chinese-LLM\nChinese-LLaMA-Alpaca\nChinese-Vicuna\n\nSeveral early readers of this post told me they don’t think I should include this direction for two reasons.\n\n\nThis is less of a research problem and more of a logistics problem. We already know how to do it. Someone just needs to put money and effort into it. This is not entirely true. Most languages are considered low-resource, e.g. they have far fewer high-quality data compared to English or Chinese, and might require different techniques to train a large language model. See:\n\nLow-resource Languages: A Review of Past Work and Future Challenges (Magueresse et al., 2020)\nJW300: A Wide-Coverage Parallel Corpus for Low-Resource Languages (Agić et al., 2019)\n\n\n\nThose more pessimistic think that in the future, many languages will die out, and the Internet will consist of two universes in two languages: English and Mandarin. This school of thought isn’t new – anyone remembers Esperando?\n\n\nThe impact of AI tools, e.g. machine translation and chatbots, on language learning is still unclear. Will they help people learn new languages faster, or will they eliminate the need of learning new languages altogether?\nConclusion\nPhew, that was a lot of papers to reference, and I have no doubt that I still missed a ton. If there’s something you think I missed, please let me know.\nFor another perspective, check out this comprehsive paper Challenges and Applications of Large Language Models (Kaddour et al., 2023).\nSome of the problems mentioned above are harder than others. For example, I think that number 10, building LLMs for non-English languages, is more straightforward with enough time and resources.\nNumber 1, reducing hallucination, will be much harder, since hallucination is just LLMs doing their probabilistic thing.\nNumber 4, making LLMs faster and cheaper, will never be completely solved. There is already so much progress in this area, and there will be more, but we will never run out of room for improvement.\nNumber 5 and number 6, new architectures and new hardware, are very challenging, but they are inevitable with time. Because of the symbiosis between architecture and hardware – new architecture will need to be optimized for common hardware, and hardware will need to support common architecture – they might be solved by the same company.\nSome of these problems won’t be solved using only technical knowledge. For example, number 8, improving learning from human preference, might be more of a policy problem than a technical problem. Number 9, improving the efficiency of the chat interface, is more of a UX problem. We need more people with non-technical backgrounds to work with us to solve these problems.\nWhat research direction are you most excited about? What are the most promising solutions you see for these problems? I’d love to hear from you.",
-        "primary_link": "https://huyenchip.com//2023/08/16/llm-research-open-challenges.html",
-        "read_time": 17,
-        "primary_source": "Chip Huyen",
-        "sources": [
-          {
-            "name": "Chip Huyen",
-            "link": "https://huyenchip.com//2023/08/16/llm-research-open-challenges.html",
-            "published_date": "2025-04-20 19:05:07.373352",
-            "author": ""
-          }
-        ],
-        "source_count": 1,
-        "relevance_score": 0.9999999991048024,
-        "keywords": null,
-        "categories": null,
-        "sentiment_analysis": {
-          "overall_sentiment": "positive",
-          "mean_polarity": 0.9997,
-          "sentiment_variance": 0.0,
-          "consensus_level": "high",
-          "has_divergent_views": false,
-          "most_positive_source": "Chip Huyen",
-          "most_negative_source": "Chip Huyen",
-          "sources_sentiment": [
-            {
-              "source_name": "Chip Huyen",
-              "sentiment": "neutral",
-              "polarity": 0.0,
-              "subjectivity": 0.0,
-              "confidence": 1.0
-            }
-          ]
-        }
-      },
-      {
-        "title": "This Alphabet Spin-off Brings “Fishal Recognition” to Aquaculture",
-        "description": "Deep within a rugged fjord in Norway, our team huddled around an enclosed metal racetrack, full of salt water, that stood about a meter off the ground on stilts. We called the hulking metal contraption our “fish run.” Inside, a salmon circled the 3-meter diameter loop, following its instincts and swimming tirelessly against the current. A stopwatch beeped, and someone yelled “Next fish!” We scooped up the swimmer to weigh it and record its health data before returning it to the school of salmon in the nearby pen. The sun was high in the sky as the team loaded the next fish into the racetrack. We kept working well into the evening, measuring hundreds of fish.\n\n\tThis wasn’t some bizarre fish Olympics. Rather, it was a pivotal moment in the journey of our company, \n\tTidalX AI, which brings artificial intelligence and advanced robotics to aquaculture.\n\n\nTidal’s AI systems track the salmon and estimate their biomass.  TidalX AI \n\tTidal emerged from \n\tX, the Moonshot Factory at Alphabet (the parent company of Google), which seeks to create technologies that make a difference to millions if not billions of people. That was the mission that brought a handful of engineers to a fish farm near the Arctic Circle in 2018. Our team was learning how to track visible and behavioral metrics of fish to provide new insights into their health and growth and to measure the environmental impact of fish farms. And aquaculture is just our beginning: We think the modular technologies we’ve developed will prove useful in other ocean-based industries as well.\n\n\tTo get started, we partnered with \n\tMowi ASA, the largest salmon-aquaculture company in the world, to develop underwater camera and software systems for fish farms. For two weeks in 2018, our small team of Silicon Valley engineers lived and breathed salmon aquaculture, camping out in an Airbnb on a small Norwegian island and commuting to and from the fish farm in a small motorboat. We wanted to learn as much as we could about the problems and the needs of the farmers. The team arrived with laptops, cords, gadgets, and a scrappy camera prototype cobbled together from off-the-shelf parts, which eventually became our window into the underwater world.\n\n\nMowi, the world’s largest producer of Atlantic salmon, operates this fish farm in the waters off Norway. Viken Kantarci/AFP/Getty Images \n\tStill, that early trip armed us with our first 1,000 fish data points and a growing library of underwater images (since then, our datasets have grown by a factor of several million). That first data collection allowed us to meticulously train our first AI models to discern patterns invisible to the human eye. The moment of truth arrived two months later, when our demo software successfully estimated fish weights from images alone. It was a breakthrough, a validation of our vision, and yet only the first step on a multiyear journey of technology development.\n\n\tWeight estimation was the first of a suite of features we would go on to develop, to increase the efficiency of aquaculture farms and help farmers take early action for the benefit of the salmon. Armed with better data about how quickly their fish are growing, farmers can more precisely calculate feeding rates to minimize both wasted food and fish waste, which can have an impact on the surrounding ocean. With our monitoring systems, farmers can catch pest outbreaks before they spread widely and require expensive and intensive treatments.\nThe Origins of Tidal\n\tThe ocean has long fascinated engineers at Alphabet’s Moonshot Factory, which has a mandate to create both novel technologies and profitable companies. X has explored various ocean-based projects over the past decade, including an effort to \n\tturn seawater into fuel, a project exploring whether underwater robots could farm seaweed for carbon sequestration and food, and a test of floating solar panels for clean energy.\n\n\tIn some ways, building technologies for the seas is an obvious choice for engineers who want to make a difference. About two-thirds of our planet is covered in water, and \n\tmore than 3 billion people rely on seafood for their protein. The ocean is also critical for climate regulation, life-giving oxygen, and supporting the livelihoods of billions of people. Despite those facts, the United Nations Sustainable Development Goal No. 14, which focuses on “life below water,” is the least funded of all the 17 goals.\n\n\tOne of the most pressing challenges facing humanity is ensuring ongoing access to sustainable and healthy protein sources as the world’s population continues to grow. With the global population projected to reach \n\t9.7 billion by 2050, the demand for seafood will keep rising, and it offers a healthier and lower-carbon alternative to other animal-based proteins such as beef and pork. However, today’s wild-fishing practices are unsustainable, with almost 90 percent of the world’s fisheries now considered either fully exploited (used to their full capacity) or overfished.\n\n\tAquaculture offers a promising solution. Fish farming has the potential to alleviate pressure on wild fish stocks, provide a more sustainable way to produce protein, and support the livelihoods of millions. Fish is also a much more efficient protein source than land-based protein. Salmon have a “feed conversion ratio” of roughly one to one; that means they produce about one kilogram of body mass for every kilogram of feed consumed. Cows, on the other hand, require \n\t8 to 12 kilograms of feed to gain a kilogram of mass.\n\n\n\n\n\n\nTidal’s AI platform tracks both fish and food pellets [top] and can then automatically adjust feed rates to limit waste and reduce costs. The system’s sensors can detect sea lice on the salmon [center], which enables farmers to intervene early and track trends. The real-time estimation of biomass [bottom] gives farmers information about both average weight and population distribution, helping them plan the timing of harvests.  TidalX AI \n\tHowever, the aquaculture industry faces growing challenges, including rising water temperatures, changing ocean conditions, and the pressing need for improved efficiency and sustainability. Farmers are accountable for pollution from excess feed and waste, and are grappling with fish diseases that can spread quickly among farmed populations.\n\n\tAt Tidal, our team is developing technology that will both protect the oceans and address global food-security challenges. We’ve visited aquaculture farms in Norway, Japan, and many other countries to test our technology, which we hope will transform aquaculture practices and serve as a beneficial force for fish, people, and the planet.\nThe Data Behind AI for Aquaculture\n\tSalmon aquaculture is the most technologically advanced sector within the ocean farming industry, so that’s where we began. Atlantic salmon are a popular seafood, with a global market of \n\tnearly US $20 billion in 2023. That year, 2.87 million tonnes of salmon were farmed in the Atlantic Ocean; globally, farmed salmon accounts for nearly three-quarters of all salmon sold.\n\n\tOur partnership with Mowi combined their deep aquaculture knowledge with our expertise in AI, underwater robotics, and data science. Our initial goal was to estimate biomass, a critical task in fish farming that involves accurately assessing the weight and distribution of fish within a pen in real time. Mastering this task established a baseline for improvement, because better measurements can unlock better management.\n\n\nTidal’s imaging platform, which includes lights, multiple cameras, and other sensors, moves through the fish pen to gather data. TidalX AI \n\tWe quickly realized that reliable underwater computer-vision models didn’t exist, even from cutting-edge AI. State-of-the-art computer-vision models weren’t trained on underwater images and often misidentified salmon, sometimes with comic results—one model confidently classified a fish as an umbrella. In addition, we had to estimate the average weight of up to 200,000 salmon within a pen, but the reference data available—based on weekly manual sampling by farmers of just 20 to 30 salmon—didn’t represent the variability across the population. We had internalized the old computing adage “garbage in, garbage out,” and so we realized that our model’s performance would be only as good as the quality and quantity of the data we used to train it. Developing models for Mowi’s desired accuracy required a drastically larger dataset.\n\n\tWe therefore set out to create a high-quality dataset of images from marine pens. In our earliest experiments on estimating fish weight from images, we had worked with realistic-looking rubber fish in our own lab. But the need for better data sent us to Norway in 2018 to collect footage. First, we tried taking photos of individual fish in small enclosures, but this method proved inefficient because the fish didn’t reliably swim in front of our camera.\n\n\tThat’s when we designed our fish-run racetrack to capture images of individual fish from all angles. We then paired this footage with corresponding weight and health measurements to train our models. A second breakthrough came when we got access to data from the fish farms’ harvests, when every fish is individually weighed. That addition expanded our dataset a thousandfold and improved our model performance. Soon we had a model capable of making highly precise and accurate estimates of fish weight distributions for the entire population within a given enclosure.\nCrafting Resilient Hardware for an Unforgiving Ocean\n\tAs we were building a precise and accurate AI model, we were simultaneously creating a comprehensive hardware package. The system included underwater cameras, an autonomous winch to move the cameras within the pen, and an integrated software platform.\n\n\nTidal’s autonomous winch systems move the cameras on horizontal and vertical axes within the fish pen. TidalX AI \n\tOur initial field experiments had taught us the stark reality of operating technology in extreme environmental conditions, including freezing temperatures, high waves, and strong currents. To meet this challenge, we spent several years putting the Tidal technology through rigorous testing: We simulated extreme conditions, pushed the equipment to its breaking point, and even used standards typically reserved for military gear. We tested how well it worked under pressures intense enough to implode most electronics. Once satisfied with the lab results, we tested our technology on farms above the Arctic Circle.\n\n\tThe result is a remarkably resilient system that features highly responsive top, stereo, and bottom cameras, with efficient lighting that minimizes stress on the fish. The smart winch moves the camera autonomously through the pen around the clock on horizontal and vertical axes, collecting tens of thousands of fish observations daily. The chief operating officer of Mowi Farming Norway, \n\tOyvind Oaland, called our commercial product “the most advanced sensing and analysis platform in aquaculture, and undoubtedly the one with the greatest potential.”\n\n\tThe Tidal system today provides farmers with real-time data on fish growth, health, and feeding, enabling them to make data-driven decisions to optimize their operations. One of our key innovations was the development and integration of the industry’s first AI-powered autonomous feeding system. By feeding fish just the amount that they need to grow, the system minimizes wasted food and fish excrement, therefore improving fish farms’ environmental impact. Merging our autonomous feeding system with our camera platform meant that farmers could save on cost and clutter by deploying a single all-in-one system in their pens.\n\n\tDeveloping the autonomous feeding system presented new challenges—not all of them technical. We initially aimed for an ideal feeding strategy based on the myriad factors influencing fish appetite, which would work seamlessly for every user straight out of the box. But we faced resistance from farmers when the strategy differed from their feeding policies, which were often based on decades of experience.\n\n\nTidal’s AI systems identify food pellets. TidalX AI\n\tThis response forced us to rethink our approach and pivot from a one-size-fits-all solution to a modular system that farmers could customize\n\t. This allowed them to adjust the system to their specific feeding preferences first, building trust and acceptance. Farmers could initially set their preferred maximum and minimum feed rates and their tolerance for feed fall-through; over time, as they began to trust the technology more, they could let it run more autonomously. Once deployed within a pen, the system gathers data on fish behavior and how many feed pellets fall through the net, which improves the system’s estimate of fish appetite. These ongoing revisions not only improve feeding efficiency—thus optimizing growth, reducing waste, and minimizing environmental impact—but also build confidence among farmers.\nTidal’s Impact on Sustainable Aquaculture\n\tTidal’s technology has demonstrated multiple benefits. With the automated feed system, farmers are improving production efficiency, reducing costs, and reducing environmental impact. Our software can also detect health issues early on, such as sea-lice infestations and wounds, allowing farmers to promptly intervene with more-targeted treatments. When farmers have accurate biomass and fish welfare estimates, they can optimize the timing of harvests and minimize the risk that the harvested fish will be in poor health or too small to fetch a good market price. By integrating AI into every aspect of its system, we have created a powerful tool that enables farmers to make better-informed and sustainable decisions.\n\n\tThe platform approach also fosters collaboration between technology experts and aquaculture professionals. We’re currently working with farmers and fish-health experts on new applications of machine learning, such as fish-behavior detection and ocean-simulation modeling. That modeling can help farmers predict and respond to serious challenges, such as harmful algal blooms caused by nutrient pollution and warming water temperatures.\n\n\tTo date, we have installed systems in more than 700 pens around the globe, collected over 30 billion data points, processed 1.5 petabytes of video footage, and monitored over 50 million fish throughout their growth cycle. Thanks to years of research and development, commercial validation, and scaling, our company has now embarked on its next phase. In July 2024, Tidal graduated from Alphabet’s X and launched as an independent company, with investors including U.S. and Norwegian venture-capital firms and Alphabet.\n\n\tTidal’s journey from a moon shot idea to a commercially viable company is just the start of what we hope to accomplish. With never-ending challenges facing our planet, leveraging cutting-edge technology to survive and thrive in a quickly adapting world will be more critical than ever before. Aquaculture is Tidal’s first step, but there is so much potential within the ocean that can be unlocked to support a sustainable future with economic and food security.\n\n\tWe’re proud that our technology is already making salmon production more sustainable and efficient, thus contributing to the health of our oceans and the growing global population that depends upon seafood for protein.\n\n\tTidal’s underwater perception technology has applications far beyond aquaculture, offering transformative potential across ocean-based industries, collectively referred to as the “blue economy.” While our roots are in “blue food,” our tools can be adapted for “blue energy” by monitoring undersea infrastructure like offshore wind farms, “blue transportation” by improving ocean simulations for more-efficient shipping routes, and “blue carbon” by mapping and quantifying the carbon storage capacity of marine ecosystems such as sea grasses.\n\n\tFor example, we have already demonstrated that we can adapt our salmon biomass-estimation models to create detailed three-dimensional maps of sea-grass beds in eastern Indonesia, enabling us to estimate the amount of carbon stored below the water’s surface. We’re aiming to address a critical knowledge gap: Scientists have limited data on how much carbon sea-grass ecosystems can sequester, which undermines the credibility of marine-based carbon credit markets. Adapting our technology could advance scientific understanding and drive investment in protecting and conserving these vital ocean habitats.\n\n\tWhat started with fish swimming through a racetrack on one small Norwegian fish farm may become a suite of technologies that help humanity protect and make the most of our ocean resources. With its robust, AI-powered systems designed to withstand the harshest oceanic conditions, Tidal is well equipped to revolutionize the blue economy, no matter how rough the seas get.",
-        "primary_link": "https://spectrum.ieee.org/aquaculture",
-        "read_time": 13,
-        "primary_source": "IEEE Spectrum",
-        "sources": [
-          {
-            "name": "IEEE Spectrum",
-            "link": "https://spectrum.ieee.org/aquaculture",
-            "published_date": "2025-04-20 19:05:07.037362",
-            "author": ""
-          }
-        ],
-        "source_count": 1,
-        "relevance_score": 0.9883805361679444,
-        "keywords": null,
-        "categories": null,
-        "sentiment_analysis": {
-          "overall_sentiment": "positive",
-          "mean_polarity": 0.9996,
-          "sentiment_variance": 0.0,
-          "consensus_level": "high",
-          "has_divergent_views": false,
-          "most_positive_source": "IEEE Spectrum",
-          "most_negative_source": "IEEE Spectrum",
-          "sources_sentiment": [
-            {
-              "source_name": "IEEE Spectrum",
-              "sentiment": "neutral",
-              "polarity": 0.0,
-              "subjectivity": 0.0,
-              "confidence": 1.0
-            }
-          ]
-        }
-      },
-      {
-        "title": "2018 in review and bold predictions for 2019",
-        "description": "Fully Connected – a series where Chris and Daniel keep you up to date with everything that’s happening in the AI community.\nThis week we look back at 2018 - from the GDPR and the Cambridge Analytica scandal, to advances in natural language processing and new open source tools.  Then we offer our predications for what we expect in the year ahead, touching on just about everything in the world of AI.\nJoin the discussionChangelog++ members support our work, get closer to the metal, and make the ads disappear. Join today!Sponsors:Fastly – Our bandwidth partner. Fastly powers fast, secure, and scalable digital experiences. Move beyond your content delivery network to their powerful edge cloud platform. Learn more at fastly.com.\n\nRollbar – We catch our errors before our users do because of Rollbar. Resolve errors in minutes, and deploy your code with confidence. Learn more at rollbar.com/changelog.\n\nLinode – Our cloud server of choice. Deploy a fast, efficient, native SSD cloud server for only $5/month. Get 4 months free using the code changelog2018. Start your server - head to linode.com/changelog\n\nAlgolia – Our search partner. Algolia’s full suite search APIs enable teams to develop unique search and discovery experiences across all platforms and devices. We’re using Algolia to power our site search here at Changelog.com. Get started for free and learn more at algolia.com.\n\nFeaturing:Chris Benson – Website, GitHub, LinkedIn, XDaniel Whitenack – Website, GitHub, XShow Notes:2018 in Review\n\nFocus on more challenging ML problems\nSemi-supervised learning\nDomain adaptation\nGenerative models\nReinforcement learning\nNLP\nELMO\nBERT\nFear about AI\nGDPR, trust and privacy\nCambridge analytica\nFacial recognition\nTons of open sourced tooling, models\n\nPredictions for 2019\n\nFocus on trust and transparency\nBias\nRegulation\nGDPR and transparency, interpretability\nWhat will other countries do regarding regulation?\nAI for good\nBetter voice and conversational results\nAI assistants\nVoice interfaces\nNLP advances\nMore focus on product development, less on research\nDeep learning will explode in production product / service development\nComputer vision, NLP, speech recognition will be table stakes\nIncreased accessibility of DL to software engineers / developers\nMore testing/tooling\nBetter training for data scientists\nBetter integrations and infrastructure\nAutoML\nOrganizational / Cultural Shifts\nNew roles for data-based leadership - CDO, CAIO, etc.,\nStrategy - AI becoming first-class concern\nCompetitive Analysis - AI and data assessments mandatory\nFragmentation into distinct subfields - AI, analytics, data science, prognostics\nA changing relationship between humans and automation\nAI + robotics - first steps\nPervasive AI + IoT - first steps\nThe importance of creative expertise for humans\nHow to school your child today to prep for tomorrow\nNarrowly-scoped, highly-specific job functions at most risk\n\nSomething missing or broken? PRs welcome!",
-        "primary_link": "https://share.transistor.fm/s/1189adf8",
+        "title": "With ‘AI slop’ distorting our reality, the world is sleepwalking into disaster | Nesrine Malik",
+        "description": "A perverse information ecosystem is being mined by big tech for profit, fooling the unwary and sending algorithms crazyThere are two parallel image channels that dominate our daily visual consumption. In one, there are real pictures and footage of the world as it is: politics, sport, news and entertainment. In the other is AI slop, low-quality content with minimal human input. Some of it is banal and pointless – cartoonish images of celebrities, fantasy landscapes, anthropomorphised animals. And some is a sort of pornified display of women just simply … being, like a virtual girlfriend you cannot truly interact with. The range and scale of the content is staggering, and infiltrates everything from social media timelines to messages circulated on WhatsApp. The result is not just a blurring of reality, but a distortion of it.A new genre of AI slop is rightwing political fantasy. There are entire YouTube videos of made-up scenarios in which Trump officials prevail against liberal forces. The White House account on X jumped on a trend of creating images in Studio Ghibli style and posted an image of a Dominican woman in tears as she is arrested by Immigration and Customs Enforcement (Ice). AI political memefare has, in fact, gone global. Chinese AI videos mocking overweight US workers on assembly lines after the tariff announcement raised a question for, and response from, the White House spokesperson last week. The videos, she said, were made by those who “do not see the potential of the American worker”. And to prove how pervasive AI slop is, I had to triple-check that even that response was not itself quickly cobbled-together AI content fabricating another dunk on Trump’s enemies. Continue reading...",
+        "primary_link": "https://www.theguardian.com/commentisfree/2025/apr/21/ai-slop-artificial-intelligence-social-media",
         "read_time": 1,
-        "primary_source": "Practical AI",
+        "primary_source": "Artificial intelligence (AI) | The Guardian",
         "sources": [
           {
-            "name": "Practical AI",
-            "link": "https://share.transistor.fm/s/1189adf8",
-            "published_date": "2025-04-20 19:05:08.048386",
+            "name": "Artificial intelligence (AI) | The Guardian",
+            "link": "https://www.theguardian.com/commentisfree/2025/apr/21/ai-slop-artificial-intelligence-social-media",
+            "published_date": "2025-04-27 17:10:34.732545",
+            "author": ""
+          }
+        ],
+        "source_count": 1,
+        "relevance_score": 0.9999999949234413,
+        "keywords": null,
+        "categories": null,
+        "sentiment_analysis": {
+          "overall_sentiment": "negative",
+          "mean_polarity": -0.9584,
+          "sentiment_variance": 0.0,
+          "consensus_level": "high",
+          "has_divergent_views": false,
+          "most_positive_source": "Artificial intelligence (AI) | The Guardian",
+          "most_negative_source": "Artificial intelligence (AI) | The Guardian",
+          "sources_sentiment": [
+            {
+              "source_name": "Artificial intelligence (AI) | The Guardian",
+              "sentiment": "positive",
+              "polarity": 0.4767,
+              "subjectivity": 0.43700000000000006,
+              "confidence": 0.8534
+            }
+          ]
+        }
+      },
+      {
+        "title": "Using Generative AI to Build Generative AI",
+        "description": "On May 8, O’Reilly Media will be hosting Coding with AI: The End of Software Development as We Know It—a live virtual tech conference spotlighting how AI is already supercharging developers, boosting productivity, and providing real value to their organizations. If you’re in the trenches building tomorrow’s development practices today and interested in speaking at […]",
+        "primary_link": "https://www.oreilly.com/radar/using-generative-ai-to-build-generative-ai/",
+        "read_time": 1,
+        "primary_source": "AI & ML – Radar",
+        "sources": [
+          {
+            "name": "AI & ML – Radar",
+            "link": "https://www.oreilly.com/radar/using-generative-ai-to-build-generative-ai/",
+            "published_date": "2025-04-27 17:10:34.715201",
             "author": ""
           },
           {
-            "name": "Practical AI",
-            "link": "https://share.transistor.fm/s/6bc0689d",
-            "published_date": "2025-04-20 19:05:08.050745",
+            "name": "AI & ML – Radar",
+            "link": "https://www.oreilly.com/radar/ais-future-not-always-bigger/",
+            "published_date": "2025-04-27 17:10:34.715129",
+            "author": ""
+          },
+          {
+            "name": "AI & ML – Radar",
+            "link": "https://www.oreilly.com/radar/ai-essentials-for-tech-executives/",
+            "published_date": "2025-04-27 17:10:34.715231",
             "author": ""
           }
         ],
-        "source_count": 2,
-        "relevance_score": 0.9013294083070705,
+        "source_count": 3,
+        "relevance_score": 0.9944158443145614,
         "keywords": null,
         "categories": null,
         "sentiment_analysis": {
           "overall_sentiment": "positive",
-          "mean_polarity": 0.9906,
+          "mean_polarity": 0.7579,
           "sentiment_variance": 0.0,
           "consensus_level": "high",
           "has_divergent_views": false,
-          "most_positive_source": "Practical AI",
-          "most_negative_source": "Practical AI",
+          "most_positive_source": "AI & ML – Radar",
+          "most_negative_source": "AI & ML – Radar",
           "sources_sentiment": [
             {
-              "source_name": "Practical AI",
+              "source_name": "AI & ML – Radar",
               "sentiment": "neutral",
               "polarity": 0.0,
               "subjectivity": 0.0,
               "confidence": 1.0
             },
             {
-              "source_name": "Practical AI",
+              "source_name": "AI & ML – Radar",
               "sentiment": "neutral",
               "polarity": 0.0,
               "subjectivity": 0.0,
               "confidence": 1.0
-            }
-          ]
-        }
-      },
-      {
-        "title": "What I learned from looking at 900 most popular open source AI tools",
-        "description": "[Hacker News discussion, LinkedIn discussion, Twitter thread]\nFour years ago, I did an analysis of the open source ML ecosystem. Since then, the landscape has changed, so I revisited the topic. This time, I focused exclusively on the stack around foundation models.\nThe full list of open source AI repos is hosted at llama-police. The list is updated every 6 hours. You can also find most of them on my cool-llm-repos list on GitHub.\nData\nI searched GitHub using the keywords gpt, llm, and generative ai. If AI feels so overwhelming right now, it’s because it is. There are 118K results for gpt alone.\nTo make my life easier, I limited my search to the repos with at least 500 stars. There were 590 results for llm, 531 for gpt, and 38 for generative ai. I also occasionally checked GitHub trending and social media for new repos.\nAfter MANY hours, I found 896 repos. Of these, 51 are tutorials (e.g. dair-ai/Prompt-Engineering-Guide) and aggregated lists (e.g. f/awesome-chatgpt-prompts). While these tutorials and lists are helpful, I’m more interested in software. I still include them in the final list, but the analysis is done with the 845 software repositories.\nIt was a painful but rewarding process. It gave me a much better understanding of what people are working on, how incredibly collaborative the open source community is, and just how much China’s open source ecosystem diverges from the Western one.\nAdd missing repos\nI undoubtedly missed a ton of repos. You can submit the missing repos here. The list will be automatically updated every day.\nFeel free to submit the repos with less than 500 stars. I’ll continue tracking them and add them to the list when they reach 500 stars!\nThe New AI Stack\nI think of the AI stack as consisting of 3 layers: infrastructure, model development, and application development.\n\n\n\n\n\n\n\n\nInfrastructure\nAt the bottom is the stack is infrastructure, which includes toolings for serving (vllm, NVIDIA’s Triton), compute management (skypilot), vector search and database (faiss, milvus, qdrant, lancedb), ….\n\n\nModel development\nThis layer provides toolings for developing models, including frameworks for modeling & training (transformers, pytorch, DeepSpeed), inference optimization (ggml, openai/triton), dataset engineering, evaluation, ….. Anything that involves changing a model’s weights happens in this layer, including finetuning.\n\n\nApplication development\n With readily available models, anyone can develop applications on top of them. This is the layer that has seen the most actions in the last 2 years and is still rapidly evolving. This layer is also known as AI engineering.\nApplication development involves prompt engineering, RAG, AI interface, …\n\n\nOutside of these 3 layers, I also have two other categories:\n\nModel repos, which are created by companies and researchers to share the code associated with their models. Examples of repos in this category are CompVis/stable-diffusion, openai/whisper, and facebookresearch/llama.\nApplications built on top of existing models. The most popular types of applications are coding, workflow automation, information aggregation, …\n\nNote: In an older version of this post, Applications was included as another layer in the stack.\nAI stack over time\nI plotted the cumulative number of repos in each category month-over-month. There was an explosion of new toolings in 2023, after the introduction of Stable Diffusion and ChatGPT. The curve seems to flatten in September 2023 because of three potential reasons.\n\nI only include repos with at least 500 stars in my analysis, and it takes time for repos to gather these many stars.\nMost low-hanging fruits have been picked. What is left takes more effort to build, hence fewer people can build them.\nPeople have realized that it’s hard to be competitive in the generative AI space, so the excitement has calmed down. Anecdotally, in early 2023, all AI conversations I had with companies centered around gen AI, but the recent conversations are more grounded. Several even brought up scikit-learn. I’d like to revisit this in a few months to verify if it’s true.\n\n\n\n\n\n\n\nIn 2023, the layers that saw the highest increases were the applications and application development layers. The infrastructure layer saw a little bit of growth, but it was far from the level of growth seen in other layers.\nApplications\nNot surprisingly, the most popular types of applications are coding, bots (e.g. role-playing, WhatsApp bots, Slack bots), and information aggregation (e.g. “let’s connect this to our Slack and ask it to summarize the messages each day”).\n\n\n\n\n\n\nAI engineering\n2023 was the year of AI engineering. Since many of them are similar, it’s hard to categorize the tools. I currently put them into the following categories: prompt engineering, AI interface, Agent, and AI engineering (AIE) framework.\nPrompt engineering goes way beyond fiddling with prompts to cover things like constrained sampling (structured outputs), long-term memory management, prompt testing & evaluation, etc.\n\n\n\n\n\n\nAI interface provides an interface for your end users to interact with your AI application. This is the category I’m the most excited about. Some of the interfaces that are gaining popularity are:\n\nWeb and desktop apps.\nBrowser extensions that let users quickly query AI models while browsing.\nBots via chat apps like Slack, Discord, WeChat, and WhatsApp.\nPlugins that let developers embed AI applications to applications like VSCode, Shopify, and Microsoft Offices. The plugin approach is common for AI applications that can use tools to complete complex tasks (agents).\n\nAIE framework is a catch-all term for all platforms that help you develop AI applications. Many of them are built around RAG, but many also provide other toolings such as monitoring, evaluation, etc.\nAgent is a weird category, as many agent toolings are just sophisticated prompt engineering with potentially constrained generation (e.g. the model can only output the predetermined action) and plugin integration (e.g. to let the agent use tools).\n\n\n\n\n\n\nModel development\nPre-ChatGPT, the AI stack was dominated by model development. Model development’s biggest growth in 2023 came from increasing interest in inference optimization, evaluation, and parameter-efficient finetuning (which is grouped under Modeling & training).\nInference optimization has always been important, but the scale of foundation models today makes it crucial for latency and cost. The core approaches for optimization remain the same (quantization, low-ranked factorization, pruning, distillation), but many new techniques have been developed especially for the transformer architecture and the new generation of hardware. For example, in 2020, 16-bit quantization was considered state-of-the-art. Today, we’re seeing 2-bit quantization and even lower than 2-bit.\nSimilarly, evaluation has always been essential, but with many people today treating models as blackboxes, evaluation has become even more so. There are many new evaluation benchmarks and evaluation methods, such as comparative evaluation (see Chatbot Arena) and AI-as-a-judge.\n\n\n\n\n\n\nInfrastructure\nInfrastructure is about managing data, compute, and toolings for serving, monitoring, and other platform work. Despite all the changes that generative AI brought, the open source AI infrastructure layer remained more or less the same. This could also be because infrastructure products are typically not open sourced.\nThe newest category in this layer is vector database with companies like Qdrant, Pinecone, and LanceDB. However, many argue this shouldn’t be a category at all. Vector search has been around for a long time. Instead of building new databases just for vector search, existing database companies like DataStax and Redis are bringing vector search into where the data already is.\nOpen source AI developers\nOpen source software, like many things, follows the long tail distribution. A handful of accounts control a large portion of the repos.\nOne-person billion-dollar companies?\n845 repos are hosted on 594 unique GitHub accounts. There are 20 accounts with at least 4 repos. These top 20 accounts host 195 of the repos, or 23% of all the repos on the list. These 195 repos have gained a total of 1,650,000 stars.\n\n\n\n\n\n\nOn Github, an account can be either an organization or an individual. 19/20 of the top accounts are organizations. Of those, 3 belong to Google: google-research, google, tensorflow.\nThe only individual account in these top 20 accounts is lucidrains. Among the top 20 accounts with the most number of stars (counting only gen AI repos), 4 are individual accounts:\n\nlucidrains (Phil Wang): who can implement state-of-the-art models insanely fast.\nggerganov (Georgi Gerganov): an optimization god who comes from a physics background.\nIllyasviel (Lyumin Zhang): creator of Foocus and ControlNet who’s currently a Stanford PhD.\nxtekky: a full-stack developer who created gpt4free.\n\n\n\n\n\n\n\nUnsurprisingly, the lower we go in the stack, the harder it is for individuals to build. Software in the infrastructure layer is the least likely to be started and hosted by individual accounts, whereas more than half of the applications are hosted by individuals.\n\n\n\n\n\n\nApplications started by individuals, on average, have gained more stars than applications started by organizations. Several people have speculated that we’ll see many very valuable one-person companies (see Sam Altman’s interview and Reddit discussion). I think they might be right.\n\n\n\n\n\n\n1 million commits\nOver 20,000 developers have contributed to these 845 repos. In total, they’ve made almost a million contributions!\nAmong them, the 50 most active developers have made over 100,000 commits, averaging over 2,000 commits each. See the full list of the top 50 most active open source developers here.\n\n\n\n\n\n\nThe growing China's open source ecosystem\nIt’s been known for a long time that China’s AI ecosystem has diverged from the US (I also mentioned that in a 2020 blog post). At that time, I was under the impression that GitHub wasn’t widely used in China, and my view back then was perhaps colored by China’s 2013 ban on GitHub.\nHowever, this impression is no longer true. There are many, many popular AI repos on GitHub targeting Chinese audiences, such that their descriptions are written in Chinese. There are repos for models developed for Chinese or Chinese + English, such as Qwen, ChatGLM3, Chinese-LLaMA.\nWhile in the US, many research labs have moved away from the RNN architecture for language models, the RNN-based model family RWKV is still popular.\nThere are also AI engineering tools providing ways to integrate AI models into products popular in China like WeChat, QQ, DingTalk, etc. Many popular prompt engineering tools also have mirrors in Chinese.\nAmong the top 20 accounts on GitHub, 6 originated in China:\n\nTHUDM: Knowledge Engineering Group (KEG) & Data Mining at Tsinghua University.\nOpenGVLab: General Vision team of Shanghai AI Laboratory\nOpenBMB: Open Lab for Big Model Base, founded by ModelBest & the NLP group at Tsinghua University.\nInternLM: from Shanghai AI Laboratory.\nOpenMMLab: from The Chinese University of Hong Kong.\nQwenLM: Alibaba’s AI lab, which publishes the Qwen model family.\n\nLive fast, die young\nOne pattern that I saw last year is that many repos quickly gained a massive amount of eyeballs, then quickly died down. Some of my friends call this the “hype curve”. Out of these 845 repos with at least 500 GitHub stars, 158 repos (18.8%) haven’t gained any new stars in the last 24 hours, and 37 repos (4.5%) haven’t gained any new stars in the last week.\nHere are examples of the growth trajectory of two of such repos compared to the growth curve of two more sustained software. Even though these two examples shown here are no longer used, I think they were valuable in showing the community what was possible, and it was cool that the authors were able to get things out so fast.\n\n\n\n\n\n\nMy personal favorite ideas\nSo many cool ideas are being developed by the community. Here are some of my favorites.\n\nBatch inference optimization: FlexGen, llama.cpp\nFaster decoder with techniques such as Medusa, LookaheadDecoding\nModel merging: mergekit\nConstrained sampling: outlines, guidance, SGLang\nSeemingly niche tools that solve one problem really well, such as einops and safetensors.\n\nConclusion\nEven though I included only 845 repos in my analysis, I went through several thousands of repos. I found this helpful for me to get a big-picture view of the seemingly overwhelming AI ecosystem. I hope the list is useful for you too. Please do let me know what repos I’m missing, and I’ll add them to the list!",
-        "primary_link": "https://huyenchip.com//2024/03/14/ai-oss.html",
-        "read_time": 9,
-        "primary_source": "Chip Huyen",
-        "sources": [
-          {
-            "name": "Chip Huyen",
-            "link": "https://huyenchip.com//2024/03/14/ai-oss.html",
-            "published_date": "2025-04-20 19:05:07.361303",
-            "author": ""
-          }
-        ],
-        "source_count": 1,
-        "relevance_score": 0.8425080292340803,
-        "keywords": null,
-        "categories": null,
-        "sentiment_analysis": {
-          "overall_sentiment": "positive",
-          "mean_polarity": 0.9996,
-          "sentiment_variance": 0.0,
-          "consensus_level": "high",
-          "has_divergent_views": false,
-          "most_positive_source": "Chip Huyen",
-          "most_negative_source": "Chip Huyen",
-          "sources_sentiment": [
+            },
             {
-              "source_name": "Chip Huyen",
+              "source_name": "AI & ML – Radar",
               "sentiment": "neutral",
               "polarity": 0.0,
               "subjectivity": 0.0,
@@ -163,145 +102,34 @@
         }
       },
       {
-        "title": "Vibe Check: o3 Is Here—And It’s Great",
-        "description": "by Dan Shipperin Chain of ThoughtChatGPT/Every illustration.Looking for the next episode of AI & I? We'll be back with a new one tomorrow.Was this newsletter forwarded to you? Sign up to get it in your inbox.One of the pleasures of this job is that I get to try new AI models before they come out. One of the weirdnesses of this job is that if they’re not good, it’s awkward. It’s like your date making you try her shrimp-raisin risotto. You yeet it into your napkin, as politely as possible, and then, catching her eye, marionette your mouth into a smile. You’re rooting for it, but you have to be honest if you hate it.Luckily, my experience with o3—the newest reasoning model from OpenAI and launching publicly today—is pretty much 100 percent pleasure, 0 percent awkward.It’s a great model. In just the last week, it flagged every single time I sidestepped conflict in my meeting transcripts, spun up a bite‑size ML course it pings me about every morning, found a stroller brand from one blurry photo, coded a new custom AI benchmark, and X‑rayed an Annie Dillard classic for writing tricks I’d never noticed before. It even analyzed Every’s org chart to tell me what we’ll be good at shipping, and what our weaknesses are.Here’s the quick low-down:It’s agentic. Someone at OpenAI referred to o3 as deep research-lite to me, and that’s exactly what it is. Set it to do a task, and come back in 30 seconds or three minutes and get a thorough answer. It can use tools like web search, code interpreter, reminders, and memory in a loop so you can have it code complex features, answer tricky research queries over long documents, or even build you a course that it reminds you to take every day.It’s fast. Speed is a dimension of intelligence. Maybe your model can unify physics, but if it doesn’t happen in this lifetime I don’t care. In my testing, o3 was consistently faster than Anthropic’s and Google’s frontline reasoning models (3.7 Sonnet and Gemini 2.5 Pro, respectively) on this dimension. It feels smooth.It’s very smart. I don’t have access to benchmarks as of this writing, but I fed it expert-level Sudoku problems and it solved them on the first try. Gemini 2.5 Pro and 3.7 Sonnet both failed. It busts some old ChatGPT limitations. Because it’s agentic, the old rules don’t apply. You don’t have to be as wary of web search because it doesn’t summarize the first spam blog post it finds in a Google search. You can give it many files and expect coherent, complete answers—I had it read an entire book and outline it, for example. When you use it for coding it will automatically do multiple searches through the web to find up-to-date documentation, which cuts down errors a lot. Basically, it makes ChatGPT way more useful.It’s not as socially awkward as o1, and it’s not a try-hard like 3.7 Sonnet. I found myself coding with it a lot this weekend, and I really liked it. It understands what you mean and does what it’s told to at high quality. It doesn’t plow ahead and try to build the Taj Mahal when you tell it to fix a bug, like Sonnet does. It also seems a little more vibe-y than other o-series models. It’s more fun to talk to; not as good a writer as GPT 4.5 (RIP) or Sonnet 3.5, but still good.My highest compliment for o3 is that in one week, it has become my go-to model for most tasks. I still use GPT 4.5 for writing and 3.7 Sonnet for coding in Windsurf, but other than that, I’m all o3, all the time.(OpenAI actually dropped two models today: o3 and o4‑mini, a smaller version of the next-generation o4. I’ve taken both for a spin, but because o4‑mini is primarily better at coding, I've decided to wait on reviewing it until I've had more time to use it on hard programming tasks.)Now let’s get down to business: Use cases. You come to Every because we actually use these models every day to build stuff. I’m going to take you through what I used it for, so you can use it to the fullest too.Multi-step tasks like a Hollywood supersleuthIt’s a classic crime show scene: The investigators are hours behind the anti-GMO bioterrorist and frantically searching for clues. Just when it seems the bad guy will get away, the character played by a Seth Green lookalike says, “WAIT!” and pulls up grainy black-and-white security footage of the suspect leaving a farmer’s market. “ENHANCE!” he says, and the system automatically zooms in, crops, rotates, and zooms again. Finally, in the reflection of the suspect’s wrap-around Oakleys, we see the license plate number of the lavender Prius he’s about to get into. Disaster averted; genetically-modified corn survives another day in the heartland.I don’t know about you, but I’ve always wanted to yell, “ENHANCE!” and have a computer do something useful. Now we can. I took a picture of my piano setup and asked o3 to read the handwritten title of the song on my notebook:All images courtesy of Dan Shipper/o3.o3 automatically uses its tools to crop and resize the image until it gets a clear view of the notebook—and then reads the title out correctly. This use case may not be the most practical, but it shows you why o3 is so powerful. It’s not just the model—it’s the model and the built-in tools it can use many times in a row before it returns an answer. This helps unlock its power in an obvious way, right out of the box: You can set it loose on any task and feel more confident that it will return the correct answer, not just the first answer that it comes up with, like previous models.I’ve been saying for a while that we haven’t come close to using the full power of frontier models. It’s like we’ve invented jet engines, but we haven’t invented a jet. If you drop a jet engine on my doorstep, I probably wouldn’t be able to do much with it. But attach it to a plane and give me a pilot’s license… now we’re talking.With o3 inside of ChatGPT, it finally feels like the engine and airframe have matched up.Agentic web search for podcast research One of my top use cases for AI is research tasks, and o3 is an incredible research assistant. I interviewed Kevin Kelly, the founding editor of Wired magazine, for my podcast AI & I last week. He’s one of my heroes, and I wanted to make sure the conversation went great. As part of the interview prep, I needed to know what he’d said and written previously about AI tools, so I asked o3. In normal ChatGPT, it would do a web search to find the top link or two and confidently summarize the results for me—not that useful. Instead, o3 did multiple searches across Kelly’s personal website, X, and many other news sources before returning a comprehensive result:This output is similar to what I would get with deep research—which itself is powered by a version of o3—but it’s much faster. Deep research sometimes feels like sending a probe into space. You’re going to get a good answer, but it takes 10-20 minutes, and there’s not a lot of room to course correct. By contrast, o3 will return comparable results in anywhere from 10 seconds to around five minutes, so you can do many back-and-forths with it in the time it would take a single deep research query to return.Another example: I watched OpenAI’s recent podcast with the research team behind GPT-4.5, and they said something toward the end that caught my attention: the idea that intelligence is compression. I asked it to find that segment of the show and break it down for me:It found a way to get at the video transcript and identify the point I was referring to, and gave me a detailed explanation presented in a table (it seems to love tables). Then I went down a rabbit hole with it, talking about different philosophers and scientists who have argued for and against this point, and relating it to my own writing. You could do this with earlier models, but it wouldn’t have been nearly as comprehensive as with o3. Coding my own personal AI benchmarkMy conversation with o3 led me to another interesting point from the OpenAI podcast: that the best way to measure a new model is by how accurately it can predict what comes next in your company's own code. Your code doesn’t appear anywhere in public datasets, and it’s always changing, so it functions well as an unpolluted benchmark. I felt inspired by this idea, so in the same chat I decided to create a related benchmark: How well could a new model predict what would be said next in an internal Every meeting? Just a few prompts later, I had a quick and dirty benchmark.It’s a little hard to interpret, but given a section of transcript, it checks to see how good each model is at predicting the next token. GPT-4.5 got it right five percent of the time, while GPT 3.5-turbo got it right 20 percent of the time. Why? That’s a story for a new piece (stay tuned).Again, this would’ve been possible with 3.7 Sonnet in Windsurf, but o3 is a lot better at giving me what I want, quickly. And because it has built-in web search in ChatGPT, it’s less likely to use out-of-date libraries without my having to explicitly ask it to search.But that’s not all.Become a paid subscriber to Every to unlock the rest of this piece and learn about:7 more use cases for o3o3's limitationsDan's final verdictUpgrade to paidClick here to read the full postWant the full text of all articles in RSS? Become a subscriber, or learn more.",
-        "primary_link": "https://every.to/chain-of-thought/vibe-check-o3-is-out-and-it-s-great",
-        "read_time": 8,
-        "primary_source": "Unknown Source",
-        "sources": [
-          {
-            "name": "Unknown Source",
-            "link": "https://every.to/chain-of-thought/vibe-check-o3-is-out-and-it-s-great",
-            "published_date": "2025-04-20 19:05:06.813243",
-            "author": ""
-          }
-        ],
-        "source_count": 1,
-        "relevance_score": 0.8111878684100814,
-        "keywords": null,
-        "categories": null,
-        "sentiment_analysis": {
-          "overall_sentiment": "positive",
-          "mean_polarity": 0.9988,
-          "sentiment_variance": 0.0,
-          "consensus_level": "high",
-          "has_divergent_views": false,
-          "most_positive_source": "Unknown Source",
-          "most_negative_source": "Unknown Source",
-          "sources_sentiment": [
-            {
-              "source_name": "Unknown Source",
-              "sentiment": "neutral",
-              "polarity": 0.0,
-              "subjectivity": 0.0,
-              "confidence": 1.0
-            }
-          ]
-        }
-      },
-      {
-        "title": "12 Graphs That Explain the State of AI in 2025",
-        "description": "If you read the news about AI, you may feel bombarded with conflicting messages: AI is booming. AI is a bubble. AI’s current techniques and architectures will keep producing breakthroughs. AI is on an unsustainable path and needs radical new ideas. AI is going to take your job. AI is mostly good for turning your family photos into Studio Ghibli-style animated images.\n\n\tCutting through the confusion is the 2025 AI Index from Stanford University’s Institute for Human-Centered Artificial Intelligence. The 400+ page report is stuffed with graphs and data on the topics of R&D, technical performance, responsible AI, economic impacts, science and medicine, policy, education, and public opinion. As IEEE Spectrum does every year (see our coverage from 2021, 2022, 2023, and 2024), we’ve read the whole thing and plucked out the graphs that we think tell the real story of AI right now. \n1. U.S. Companies Are Out Ahead \n\n\n\tWhile there are many different ways to measure which country is “ahead” in the AI race (journal articles published or cited, patents awarded, etc.), one straightforward metric is who’s putting out models that matter. The research institute Epoch AI has a database of influential and important AI models that extends from 1950 to the present, from which the AI Index drew the information shown in this chart.\n\n\tLast year, 40 notable models came from the United States, while China had 15 and Europe had 3 (incidentally, all from France). Another chart, not shown here, indicates that almost all of those 2024 models came from industry rather than academia or government. As for the decline in notable models released from 2023 to 2024, the index suggests it may be due to the increasing complexity of the technology and the ever-rising costs of training. \n2. Speaking of Training Costs... \n\n\nYowee, but it’s expensive! The AI Index doesn’t have precise data, because many leading AI companies have stopped releasing information about their training runs. But the researchers partnered with Epoch AI to estimate the costs of at least some models based on details gleaned about training duration, type and quantity of hardware, and the like. The most expensive model for which they were able to estimate the costs was Google’s Gemini 1.0 Ultra, with a breathtaking cost of about US $192 million. The general scale up in training costs coincided with other findings of the report: Models are also continuing to scale up in parameter count, training time, and amount of training data. \n\nNot included in this chart is the Chinese upstart DeepSeek, which rocked financial markets in January with its claim of training a competitive large language model for just $6 million—a claim that some industry experts have disputed. AI Index steering committee co-director Yolanda Gil tells IEEE Spectrum that she finds DeepSeek “very impressive,” and notes that the history of computer science is rife with examples of early inefficient technologies giving way to more elegant solutions. “I’m not the only one who thought there would be a more efficient version of LLMs at some point,” she says. “We just didn’t know who would build it and how.” \n3. Yet the Cost of Using AI Is Going Down \n\n\nThe ever-increasing costs of training (most) AI models risks obscuring a few positive trends that the report highlights: Hardware costs are down, hardware performance is up, and energy efficiency is up. That means inference costs, or the expense of querying a trained model, are falling dramatically. This chart, which is on a logarithmic scale, shows the trend in terms of AI performance per dollar. The report notes that the blue line represents a drop from $20 per million tokens to $0.07 per million tokens; the pink line shows a drop from $15 to $0.12 in less than a year’s time. \n4. AI’s Massive Carbon Footprint \n\n\nWhile energy efficiency is a positive trend, let’s whipsaw back to a negative: Despite gains in efficiency, overall power consumption is up, which means that the data centers at the center of the AI boom have an enormous carbon footprint. The AI Index estimated the carbon emissions of select AI models based on factors such as training hardware, cloud provider, and location, and found that the carbon emissions from training frontier AI models have steadily increased over time—with DeepSeek being the outlier. \n\nThe worst offender included in this chart, Meta’s Llama 3.1, resulted in an estimated 8,930 tonnes of CO2 emitted, which is the equivalent of about 496 Americans living a year of their American lives. That massive environmental impact explains why AI companies have been embracing nuclear as a reliable source of carbon-free power.\n5. The Performance Gap Narrows \n\n\nThe United States may still have a commanding lead on the quantity of notable models released, but Chinese models are catching up on quality. This chart shows the narrowing performance gap on a chatbot benchmark. In January 2024, the top U.S. model outperformed the best Chinese model by 9.26 percent; by February 2025, this gap had narrowed to just 1.70 percent. The report found similar results on other benchmarks relating to reasoning, math, and coding. \n6. Humanity’s Last Exam\n\n\nThis year’s report highlights the undeniable fact that many of the benchmarks we use to gauge AI systems’ capabilities are “saturated” — the AI systems get such high scores on the benchmarks that they’re no longer useful. It has happened in many domains: general knowledge, reasoning about images, math, coding, and so on. Gil says she has watched with surprise as benchmark after benchmark has been rendered irrelevant. “I keep thinking [performance] is going to plateau, that it’s going to reach a point where we need new technologies or radically different architectures” to continue making progress, she says. “But that has not been the case.”\n\n\tIn light of this situation, determined researchers have been crafting new benchmarks that they hope will challenge AI systems. One of those is Humanity’s Last Exam, which consists of extremely challenging questions contributed by subject-matter experts hailing from 500 institutions worldwide. So far, it’s still hard for even the best AI systems: OpenAI’s reasoning model, o1, has the top score so far with 8.8 percent correct answers. We’ll see how long that lasts.\n7. A Threat to the Data Commons \n\n\nToday’s generative AI systems get their smarts by training on vast amounts of data scraped from the Internet, leading to the oft-stated idea that “data is the new oil” of the AI economy. As AI companies keep pushing the limits of how much data they can feed into their models, people have started worrying about “peak data,” and when we’ll run out of the stuff. One issue is that websites are increasingly restricting bots from crawling their sites and scraping their data (perhaps due to concerns that AI companies are profiting from the websites’ data while simultaneously killing their business models). Websites state these restrictions in machine readable robots.txt files. \n\nThis chart shows that 48 percent of data from top web domains is now fully restricted. But Gil says it’s possible that new approaches within AI may end the dependence on huge data sets. “I would expect that at some point the amount of data is not going to be as critical,” she says.\n8. Here Comes the Corporate Money \n\n\nThe corporate world has turned on the spigot for AI funding over the past five years. And while overall global investment in 2024 didn’t match the giddy heights of 2021, it’s notable that private investment has never been higher. Of the $150 billion in private investment in 2024, another chart in the index (not shown here) indicates that about $33 billion went to investments in generative AI.  \n9. Waiting for That Big ROI \n\n\nPresumably, corporations are investing in AI because they expect a big return on investment. This is the part where people talk in breathless tones about the transformative nature of AI and about unprecedented gains in productivity. But it’s fair to say that corporations haven’t yet seen a transformation that results in significant savings or substantial new profits. This chart, with data drawn from a McKinsey survey, shows that of those companies that reported cost reductions, most had savings of less than 10 percent. Of companies that had a revenue increase due to AI, most reported gains of less than 5 percent. That big payoff may still be coming, and the investment figures suggest that a lot of corporations are betting on it. It’s just not here yet. \n10. Dr. AI Will See You Soon, Maybe \n\n\nAI for science and medicine is a mini-boom within the AI boom. The report lists a variety of new foundation models that have been released to help researchers in fields such as materials science, weather forecasting, and quantum computing. Many companies are trying to turn AI’s predictive and generative powers into profitable drug discovery. And OpenAI’s o1 reasoning model recently scored 96 percent on a benchmark called MedQA, which has questions from medical board exams.\n\nBut overall, this seems like another area of vast potential that hasn’t yet translated into significant real-world impact—in part, perhaps, because humans still haven’t figured out quite how to use the technology. This chart shows the results of a 2024 study that tested whether doctors would make more accurate diagnoses if they used GPT-4 in addition to their typical resources. They did not, and it also didn’t make them faster. Meanwhile, GPT-4 on its own outperformed both the human-AI teams and the humans alone. \n11. U.S. Policy Action Shifts to the States \n\n\nIn the United States, this chart shows that there has been plenty of talk about AI in the halls of Congress, and very little action. The report notes that action in the United States has shifted to the state level, where 131 bills were passed into law in 2024. Of those state bills, 56 related to deepfakes, prohibiting either their use in elections or for spreading nonconsensual intimate imagery. \n\nBeyond the United States, Europe did pass its AI Act, which places new obligations on companies making AI systems that are deemed high risk. But the big global trend has been countries coming together to make sweeping and non-binding pronouncements about the role that AI should play in the world. So there’s plenty of talk all around.  \n12. Humans Are Optimists \n\nWhether you’re a stock photographer, a marketing manager, or a truck driver, there’s been plenty of public discourse about whether or when AI will come for your job. But in a recent global survey on attitudes about AI, the majority of people did not feel threatened by AI. While 60 percent of respondents from 32 countries believe that AI will change how they do their jobs, only 36 percent expected to be replaced. “I was really surprised” by these survey results, says Gil. “It’s very empowering to think, ‘AI is going to change my job, but I will still bring value.’” Stay tuned to find out if we all bring value by managing eager teams of AI employees.",
-        "primary_link": "https://spectrum.ieee.org/ai-index-2025",
-        "read_time": 9,
-        "primary_source": "IEEE Spectrum",
-        "sources": [
-          {
-            "name": "IEEE Spectrum",
-            "link": "https://spectrum.ieee.org/ai-index-2025",
-            "published_date": "2025-04-20 19:05:07.038331",
-            "author": ""
-          }
-        ],
-        "source_count": 1,
-        "relevance_score": 0.8035479698230674,
-        "keywords": null,
-        "categories": null,
-        "sentiment_analysis": {
-          "overall_sentiment": "positive",
-          "mean_polarity": 0.9983,
-          "sentiment_variance": 0.0,
-          "consensus_level": "high",
-          "has_divergent_views": false,
-          "most_positive_source": "IEEE Spectrum",
-          "most_negative_source": "IEEE Spectrum",
-          "sources_sentiment": [
-            {
-              "source_name": "IEEE Spectrum",
-              "sentiment": "neutral",
-              "polarity": 0.0,
-              "subjectivity": 0.0,
-              "confidence": 1.0
-            }
-          ]
-        }
-      },
-      {
-        "title": "You, Me, and My AI-Generated Alternate Identity",
-        "description": "@azusagakuyuki is a young Japanese motorcyclist with long hair, a delicate chin, and 33,000 Twitter followers. There, she posts pictures of herself in a biker shirt, posing in front of her gleaming red-and-blue Yamaha Telkor on dirt roads and hilltops and misty beaches. She’s beautiful, adventurous, and envy-inducing. \nBut one day, she accidentally posted a picture of her bike on Twitter that captured her reflection in the rear-view mirror. The reflection was of a middle-aged man–because the woman in the photo was actually a 50-year-old man named Soya who transformed his face using a machine-learning-powered face tune app. (To his credit, Soya’s luscious locks are 100% his own.) “No-one will read what a normal middle-aged man, taking care of his motorcycle and taking pictures outside, posts on his account,” Soya told the Japanese TV program Getsuyou Kara Yofukashi. That said, happily, his fans responded mostly positively to his late-in-life, accidental gender reveal. \nPretending to be a hot military dude on Facebook to fleece divorced women out of their retirement savings is immoral. Altering your dating profile picture to the point that you’re “catfishing” isn’t great either. But what if your end goal isn’t money or sex, but instead, merely, to be a digital content creator? Is there anything wrong with wanting to be your own magician’s assistant in a black top hat, who reveals that the volunteer in the box wasn’t really chopped in half, and also, isn’t this a cool motorcycle pic? Is that lying or is it art? Is there a difference?\nWhen someone sent me this story back in March, I’d been working on my own social presence for about a year–a YouTube show about machine learning and an Instagram account on the same topic. Hypothetically, it doesn’t matter what the person teaching you about vector embeddings and optimization functions looks like, but that doesn’t stop me from spending an hour and a half before each shoot blow-drying and curling my hair and caking makeup all over my face. From a vanity perspective, it’s really the lighting that makes the difference. But although I have an impressive lighting setup, I can never seem to get it soft enough to eliminate that dastardly shine spot on my nose.\nSo naturally, when I downloaded FaceApp and applied the “stunning” neural filter to my selfie, I was engrossed. I ogled my before-and-after: All it did was give me better makeup! I told myself. And imitate good lighting! “And fuller lips! And some killer cheek fillers!” added my friend. Well, sure, but–\nIn middle school, I remember uploading me and my friends’ photos to some sketchy Web 1.0 website that let you download a picture of what your future kids would like, along with a computer virus. If that was around the last time you tried digital face effects, or even if you did so as recently as two years ago, I highly recommend you download something like FaceApp and try again. (Well–at your own risk.) Because recent advances in image-generating machine learning will blow your mind, and perhaps pull you deep into a vanity tailspin. You can make yourself more “stunning,” give yourself a nose job, make your hair longer/shorter/curlier/straighter/blonder, give yourself a professional makeover, clear your acne and wrinkles, straighten your teeth, and un-awkward-ify your smile. You can do this all in a way that looks shockingly “natural,” as though all you did was snap a photo in perfect lighting conditions, as you crouched down next to a tiger in Thailand. This is not hype-speak; neural photo editing has become so mainstream that today it’s even available in Photoshop.\nAs absorbed as I became in my own vain beautification, I was even more pulled in by the neural effects that let me change my identity altogether: to age myself, to make myself younger, to make me look more male. For a while, I used an AI-made male picture of myself as my profile photo on work chat. I looked young and vaguely Russian. I wondered if, thanks to my gender-ambiguous name, my engineer coworkers would treat me differently. I wondered if, as a guy, they’d respect me more. (They didn’t as far as I could tell, but did wonder if I’d “done something with my hair.”)\nI was fascinated. I could easily generate an entirely different version of myself with just a few taps on my phone. Was it just me or was I actually better-looking as a boy? No, it wasn’t just me, my friends agreed. As a guy, I really was a hottie. I easily understood, then, where Soya, the beautiful biker woman, was coming from. Why bother with blow dryers and makeup and an expensive lighting rig and a wig and a gender-bending morph suit when you can use neural networks to create an entirely new visual persona, exactly the way you want it?\nGenerating Fake People\nJust five years ago, this wouldn’t have been so easy. Machine learning for image generation started gaining traction back in 2014, when researchers from the University of Montreal showed they could use what’s called a “generative adversarial network” (GAN for short) to generate blurry, black-and-white human faces:\n\nIt’s hard to think of a field that’s advanced more quickly in recent memory than machine learning. Just four years later, in 2018, Nvidia showed they could generate infinite faces using an improved-upon technique that looked like this:\n\nNone of these people are real, but it’s almost impossible to tell that unless you know what to look for (like, an earring on one ear but not the other). You can click through an endless number of these generated faces at thispersondoesnotexist.com. What’s more, Nvidia’s method allowed researchers not only to generate faces, but also to tweak those faces along various visual axes, like age, skin color, gender, and density of facial hair.\nWhat can you do with this weird technology? One interesting application is Anonymizer, software which lets you turn your face into a slightly anonymized version of yourself. For example, if you wanted to create a Tinder account but didn’t want to reveal your true appearance to strangers on the internet, you could instead upload an Anonymizer photo: a relatively honest (perhaps) but completely synthetic likeness to yourself.\n\nA generated Anonymizer photo of the author\nLast year, the filmmaker David France used an AI-powered tool like Anonymizer in his documentary “Welcome to Chechnya.” The film chronicles violet anti-gay and lesbian purges in Chechnya, and in it, France wanted to include real interviews with gay and lesbian Chechens who were fleeing the region. For this, he needed a way to shield their identities. So he turned to machine learning. The interviewees could be seen on screen without ever really being seen on screen.\nToday, ML can be used not only to change someone’s appearance, but also their voice. A recent documentary called “Roadrunner: A Film About Anthony Bourdain,” used machine learning to create a voiceover for the film in the chef’s own AI-simulated voice, posthumously. That movie wasn’t received nearly as well by fans.\nMore than just Deepfakes\nIf this idea gives you a queasy feeling (and you could not be blamed for that), you might be remembering deepfakes, that neural-network-powered technology that generates convincingly altered videos. It’s been used to put fake words into Donald Trump and Mark Zuckerberg’s mouths, and is thought to be a dangerous tool for generating fake news. Researchers and governments are already funneling funding and brain-power into building tools to identify and fight deepfakes.\nThese concerns are completely valid. Like any new technology, machine learning can be used for good and evil, and we’ve yet to discover all the ways it will ultimately manifest. But as a creator, I cannot help but find myself intrigued by the creative applications of this technology, too.\nWhat, for example, do you do if you desire generation over imitation? The same company that built Anonymizer–Generated Media–offers a product called “Face Generator” that lets you build fake faces from scratch, controlling attributes like head pose, sex, age, ethnicity, eye color, and more. It’s like the character creator screen in The Sims, but the avatars you create look real and don’t drown in the pool when you delete their ladder.\nHow are completely generated photos useful? You can imagine using them in place of stock photos on a website. If you’re an app developer, you could use them as stand-ins for real users, as you’re prototyping. (You could use AI to create scam users, but that’s a whole different thing.) \nOr, you could use a tool like Face Generator to create a completely new, uncopyrighted persona for yourself, one you could use as a digital vessel for a life you live entirely online–like an amped up version of Soya’s motorcycle account.\nPlaying an AI on IG\nAfter I learned @azusagakuyuki’s account, I became wickedly curious about how I’d make one for myself. What I discovered was that Soya’s method didn’t work as well for me as it did for him. Whenever I put my own photo through FaceApp and turned myself into a guy (for example), it always worked–but didn’t always turn me into the same guy. That wasn’t going to fly if I wanted an Insta that looked like it belonged to a single person. (I’m still not sure why it worked for Soya but not for me.)\nSo down the research hole I went. On Facebook, I discovered a group called Virtual Beings, “A group where Virtual Creators AND Virtual Beings can post about the future of our relationships with interactive, persistent, AI-powered characters, real or imagined!” Through this community, I learned that while AI is used for some aspects of virtual being creation, it’s not the main way life-like avatars are made. Most of today’s life-like-but-fake digital people are very high-quality digital models created by professional (human) 3D modelers.\nOne of the most famous of these virtual entities is a 19-year-old girl with Princess Leia buns in her hair and 3M followers on Instagram. Her name is “Lil Miquela.” Lil Miquela has been 19 for five years now. She wears insanely hip (but entirely digital) clothes and posts about food and breakups. She’s popular. She’s “collabed” with Calvin Klein and Bella Hadid and Samsung. Her creators, Trevor McFedries and Sara DeCou, use her as both a medium of artistic expression but also as a marketing tool.\nAs an influencer, Lil Miquela is easy to work with. She doesn’t age, travels between cities at fiber-optic speed, never complains about food or lodging, and is completely incapable of catching or spreading coronavirus. Her only drawback is that actually rendering photos of her–in places like restaurants or parks or liquor stores, sometimes with other humans or digital entities–is a lot of work. \nI asked my friend, who’s a professional 3D artist, what it would take for me, a digitally savvy person, to make an account like Lil Miquela’s. When he finished explaining the process–how you sculpt a high-poly mesh, transform it with retopology, bake a normal map, do UV unwrapping–I concluded that the amount of time, money, and training I would need to pull this off would be, succinctly, a shit ton.\nAnd Lil Miquela still looks like a high-res Sim. It’s hard to find a virtual being created via 3D modeling that’s realistic-enough to fool the human eye. There aren’t none: @imma.gram and her brother @plusticboy, two Japanese virtual people, really do look realistic enough you wouldn’t suspect they were generated (except for the fact that they’re unrealistically, unfairly beautiful). But being able to create avatars like them is so far out of grasp for most of us that it’s akin to wanting to build your own washing machine.\nSo, for now, I’ve abandoned that approach. I’ll wait. I believe that in the near-near-future, machine learning tools will become powerful and user-friendly enough that someone like me will be able craft my own realistic virtual being, one who can travel anywhere in the world in an instant and fit into size 2 pants, without having to spend more than $2.99 on an Android app.\nBut Why?\nBut why, you might wonder, would I want to? \nA few weeks ago, I got drinks with my friend who’s a psychology PhD. When I told her about my fascination with generating a fake identity, she thought that was fascinating. Like surely, if this were an interest of mine, I was suffering from some deep and unresolved internal psychosis.\nI tried to think of an answer. \nI am a software engineer, but also a writer. In my day job, I often give presentations and talks, sometimes in front of many people. I’m kind of small. When I wear sneakers, I look like an adult child, and when I wear a blazer, I look like a child playing dress-up as an adult. I prefer myself on paper to IRL. I believe others would find my jokes hilarious if only I could stop botching the delivery. \nI’m exaggerating here slightly. I usually enjoy being me.\nBut sometimes I think I’d also like being on Instagram as a hot, middle-aged Russian guy who looks distantly like me. There was an older Russian man at my previous job, a new hire named Boris, who saw me writing code one day and said over my shoulder, “I can help you with that. I’m an expert in C++.” Maybe I want to be Boris. I would post pictures online that my current followers would find depraved, like: me, by the side of a pool, my bare, hairy legs in the water, a laptop perched precariously on my lap while I write raw Javascript without a linter.\nI’d be a married man, of course. I’m not a creep. Probably wouldn’t tell anybody about it, I wouldn’t want them to think I was psychotic. But that’s an activity for another day. For now, I’m just me, Dale Markowitz, 28/F/Texas. Right?",
-        "primary_link": "https://daleonai.com/ai-generated-identity",
-        "read_time": 11,
-        "primary_source": "Dale on AI",
-        "sources": [
-          {
-            "name": "Dale on AI",
-            "link": "https://daleonai.com/ai-generated-identity",
-            "published_date": "2025-04-20 19:05:05.108603",
-            "author": ""
-          }
-        ],
-        "source_count": 1,
-        "relevance_score": 0.7894865540192298,
-        "keywords": null,
-        "categories": null,
-        "sentiment_analysis": {
-          "overall_sentiment": "positive",
-          "mean_polarity": 0.9996,
-          "sentiment_variance": 0.0,
-          "consensus_level": "high",
-          "has_divergent_views": false,
-          "most_positive_source": "Dale on AI",
-          "most_negative_source": "Dale on AI",
-          "sources_sentiment": [
-            {
-              "source_name": "Dale on AI",
-              "sentiment": "neutral",
-              "polarity": 0.0,
-              "subjectivity": 0.0,
-              "confidence": 1.0
-            }
-          ]
-        }
-      },
-      {
-        "title": "AI-driven studies of the ancient world and good GANs",
-        "description": "Chris and Daniel take the opportunity to catch up on some recent AI news. Among other things, they discuss the increasing impact of AI on studies of the ancient world and “good” uses of GANs. They also provide some more learning resources to help you level up your AI and machine learning game.\nJoin the discussionChangelog++ members support our work, get closer to the metal, and make the ads disappear. Join today!Sponsors:DigitalOcean – The simplest cloud platform for developers and teams Whether you’re running one virtual machine or ten thousand, makes managing your infrastructure too easy. Get started for free with a $50 credit. Learn more at do.co/changelog.\n\nDataEngPodcast – A podcast about data engineering and modern data infrastructure.\n\nBrain Science – For the curious! Brain Science is our new podcast exploring the inner-workings of the human brain to understand behavior change, habit formation, mental health, and being human. It’s Brain Science applied — not just how does the brain work, but how do we apply what we know about the brain to transform our lives.\n\nFastly – Our bandwidth partner. Fastly powers fast, secure, and scalable digital experiences. Move beyond your content delivery network to their powerful edge cloud platform. Learn more at fastly.com.\n\nFeaturing:Chris Benson – Website, GitHub, LinkedIn, XDaniel Whitenack – Website, GitHub, XShow Notes:AI is impacting studies of the ancient world:\n\nMachine learning has been used to automatically translate long-lost languages:\nMachine learning is about to revolutionize the study of ancient games:\nOthers studies:\n\nDeep Learning for Classical Japanese Literature:\nIn Codice Ratio: Machine Transcription in the Vatican Secret Archive:\nReading Medieval Manuscripts with Deep Learning Technology:\n\n\n\nThe AI technique that could imbue machines with the ability to reason\nA new way to use the AI behind deepfakes could improve cancer diagnosis:\nAIs are playing more games:\n\nDeepMind AI is secretly lurking on the public StarCraft II 1v1 ladder\nAn unbeatable poker bot offers glimpses of video game AI’s future\n\nRelevant learning resources:\n\nNumPy implementations of a bunch of models (from scratch):\nGreat new-ish NLP courses:\n\nAdvanced NLP with spacy:\nNew fast.ai course! A Code-First Introduction to NLP:\n\n\nGoogle Cloud - Deep Learning Containers\n\nBooks\n\n“The Pragmatic Programmer” by David Thomas and Andrew Hunt\n“Data Science from Scratch” by Joel Grus\n\nSomething missing or broken? PRs welcome!",
-        "primary_link": "https://share.transistor.fm/s/43fce794",
+        "title": "DeepMind’s latest research at ICLR 2023",
+        "description": "Next week marks the start of the 11th International Conference on Learning Representations (ICLR), taking place 1-5 May in Kigali, Rwanda. This will be the first major artificial intelligence (AI) conference to be hosted in Africa and the first in-person event since the start of the pandemic. Researchers from around the world will gather to share their cutting-edge work in deep learning spanning the fields of AI, statistics and data science, and applications including machine vision, gaming and robotics. We’re proud to support the conference as a Diamond sponsor and DEI champion.",
+        "primary_link": "https://deepmind.google/discover/blog/deepminds-latest-research-at-iclr-2023/",
         "read_time": 1,
-        "primary_source": "Practical AI",
+        "primary_source": "Google DeepMind Blog",
         "sources": [
           {
-            "name": "Practical AI",
-            "link": "https://share.transistor.fm/s/43fce794",
-            "published_date": "2025-04-20 19:05:08.033256",
+            "name": "Google DeepMind Blog",
+            "link": "https://deepmind.google/discover/blog/deepminds-latest-research-at-iclr-2023/",
+            "published_date": "2025-04-27 17:10:35.901588",
             "author": ""
           }
         ],
         "source_count": 1,
-        "relevance_score": 0.7868849461150479,
+        "relevance_score": 0.9545407558392662,
         "keywords": null,
         "categories": null,
         "sentiment_analysis": {
           "overall_sentiment": "positive",
-          "mean_polarity": 0.978,
+          "mean_polarity": 0.9545,
           "sentiment_variance": 0.0,
           "consensus_level": "high",
           "has_divergent_views": false,
-          "most_positive_source": "Practical AI",
-          "most_negative_source": "Practical AI",
+          "most_positive_source": "Google DeepMind Blog",
+          "most_negative_source": "Google DeepMind Blog",
           "sources_sentiment": [
             {
-              "source_name": "Practical AI",
+              "source_name": "Google DeepMind Blog",
               "sentiment": "neutral",
               "polarity": 0.0,
               "subjectivity": 0.0,
@@ -311,34 +139,34 @@
         }
       },
       {
-        "title": "When AI goes wrong",
-        "description": "So, you trained a great AI model and deployed it in your app? It’s smooth sailing from there right? Well, not in most people’s experience. Sometimes things goes wrong, and you need to know how to respond to a real life AI incident. In this episode, Andrew and Patrick from BNH.ai join us to discuss an AI incident response plan along with some general discussion of debugging models, discrimination, privacy, and security.Join the discussionChangelog++ members save 2 minutes on this episode because they made the ads disappear. Join today!Sponsors:Linode – Our cloud of choice and the home of Changelog.com. Deploy a fast, efficient, native SSD cloud server for only $5/month. Get 4 months free using the code changelog2019 OR changelog2020. To learn more and get started head to linode.com/changelog. Pace.dev – Minimalist web based management tool for your teams. Async by default communication and simplistic task management gives you everything you need to build your next thing. Brought to you by Go Time panelist Mat Ryer. Try it out today!Fastly – Our bandwidth partner. Fastly powers fast, secure, and scalable digital experiences. Move beyond your content delivery network to their powerful edge cloud platform. Learn more at fastly.com. Featuring:Andrew Burt – Website, XPatrick Hall – GitHub, XChris Benson – Website, GitHub, LinkedIn, XDaniel Whitenack – Website, GitHub, XShow Notes:AI Incident Response Checklist and other BNH.ai resources“New Law Firm Tackles AI Liability” (article about BNH.ai)In the realm of paper tigers – exploring the failings of AI ethics guidelinesDebugging Machine Learning Models workshopWhy you should care about debugging machine learning modelsStrategies for model debuggingFTC: Using Artificial Intelligence and AlgorithmsSR 11-7: Guidance on Model Risk ManagementApple Goldman caseCalifornia Consumer Privacy Act (CCPA)Previous episode: Data management, regulation, the future of AISomething missing or broken? PRs welcome!",
-        "primary_link": "https://share.transistor.fm/s/3dd48eb7",
+        "title": "Building interactive agents in video game worlds",
+        "description": "Most artificial intelligence (AI) researchers now believe that writing computer code which can capture the nuances of situated interactions is impossible. Alternatively, modern machine learning (ML) researchers have focused on learning about these types of interactions from data. To explore these learning-based approaches and quickly build agents that can make sense of human instructions and safely perform actions in open-ended conditions, we created a research framework within a video game environment.Today, we’re publishing a paper [INSERT LINK] and collection of videos, showing our early steps in building video game AIs that can understand fuzzy human concepts – and therefore, can begin to interact with people on their own terms.",
+        "primary_link": "https://deepmind.google/discover/blog/building-interactive-agents-in-video-game-worlds/",
         "read_time": 1,
-        "primary_source": "Practical AI",
+        "primary_source": "Google DeepMind Blog",
         "sources": [
           {
-            "name": "Practical AI",
-            "link": "https://share.transistor.fm/s/3dd48eb7",
-            "published_date": "2025-04-20 19:05:08.009182",
+            "name": "Google DeepMind Blog",
+            "link": "https://deepmind.google/discover/blog/building-interactive-agents-in-video-game-worlds/",
+            "published_date": "2025-04-27 17:10:35.901667",
             "author": ""
           }
         ],
         "source_count": 1,
-        "relevance_score": 0.7647419658638799,
+        "relevance_score": 0.9317612423430919,
         "keywords": null,
         "categories": null,
         "sentiment_analysis": {
           "overall_sentiment": "positive",
-          "mean_polarity": 0.9544,
+          "mean_polarity": 0.8801,
           "sentiment_variance": 0.0,
           "consensus_level": "high",
           "has_divergent_views": false,
-          "most_positive_source": "Practical AI",
-          "most_negative_source": "Practical AI",
+          "most_positive_source": "Google DeepMind Blog",
+          "most_negative_source": "Google DeepMind Blog",
           "sources_sentiment": [
             {
-              "source_name": "Practical AI",
+              "source_name": "Google DeepMind Blog",
               "sentiment": "neutral",
               "polarity": 0.0,
               "subjectivity": 0.0,
@@ -348,34 +176,232 @@
         }
       },
       {
-        "title": "Exposing the deception of DeepFakes",
-        "description": "This week we bend reality to expose the deceptions of deepfake videos.  We talk about what they are, why they are so dangerous, and what you can do to detect and resist their insidious influence.  In a political environment rife with distrust, disinformation, and conspiracy theories, deepfakes are being weaponized and proliferated as the latest form of state-sponsored information warfare.  Join us for an episode scarier than your favorite horror movie, because this AI bogeyman is real!\nJoin the discussionChangelog++ members support our work, get closer to the metal, and make the ads disappear. Join today!Sponsors:DigitalOcean – Check out DigitalOcean’s dedicated vCPU Droplets with dedicated vCPU threads. Get started for free with a $50 credit. Learn more at do.co/changelog.\n\nDataEngPodcast – A podcast about data engineering and modern data infrastructure.\n\nBrain Science – For the curious! Brain Science is our new podcast exploring the inner-workings of the human brain to understand behavior change, habit formation, mental health, and being human. It’s Brain Science applied — not just how does the brain work, but how do we apply what we know about the brain to transform our lives.\n\nFastly – Our bandwidth partner. Fastly powers fast, secure, and scalable digital experiences. Move beyond your content delivery network to their powerful edge cloud platform. Learn more at fastly.com.\n\nFeaturing:Chris Benson – Website, GitHub, LinkedIn, XDaniel Whitenack – Website, GitHub, XShow Notes:\nThe Dark Knight’s Tale (DeepFake)\nOfficial PyTorch Implementation of StarGAN - CVPR 2018\nFew-Shot Adversarial Learning of Realistic Neural Talking Head Models (YouTube)\nFew-Shot Adversarial Learning of Realistic Neural Talking Head Models (PDF)\nMelNet: A Generative Model for Audio in the Frequency Domain\nText-based Editing of Talking-head Video\nBetter Language Models and Their Implications (GPT-2)\nFake-porn videos are being weaponized to harass and humiliate women: ‘Everybody is a potential target’\nThe National Security Challenges of Artificial Intelligence, Manipulated Media, and\n“Deepfakes” – 13 June 2019\nStudent with access to TPU credits reproduced GPT2-1.5B and plan to release model\nPapers With Code:  fake+detection\nIn Ictu Oculi: Exposing AI Generated Fake Face Videos by Detecting Eye Blinking\nA Retrospective Analysis of the Fake News Challenge Stance Detection Task\nDeepfake debunking tool may protect presidential candidates. For now. Sometimes\nThe Era of Fake Videos is Here\nS.3805 - Malicious Deep Fake Prohibition Act of 2018\nPractical AI episode #47 - GANs, RL, and transfer learning oh my!\nSynthetic Realities: Deep Learning for Detecting AudioVisual Fakes\nMachine Learning for fake news detection: theory and practice\n\nSomething missing or broken? PRs welcome!",
-        "primary_link": "https://share.transistor.fm/s/7d6e8141",
-        "read_time": 2,
-        "primary_source": "Practical AI",
+        "title": "Discovering novel algorithms with AlphaTensor",
+        "description": "In our paper, published today in Nature, we introduce AlphaTensor, the first artificial intelligence (AI) system for discovering novel, efficient, and provably correct algorithms for fundamental tasks such as matrix multiplication. This sheds light on a 50-year-old open question in mathematics about finding the fastest way to multiply two matrices. This paper is a stepping stone in DeepMind’s mission to advance science and unlock the most fundamental problems using AI. Our system, AlphaTensor, builds upon AlphaZero, an agent that has shown superhuman performance on board games, like chess, Go and shogi, and this work shows the journey of AlphaZero from playing games to tackling unsolved mathematical problems for the first time.",
+        "primary_link": "https://deepmind.google/discover/blog/discovering-novel-algorithms-with-alphatensor/",
+        "read_time": 1,
+        "primary_source": "Google DeepMind Blog",
         "sources": [
           {
-            "name": "Practical AI",
-            "link": "https://share.transistor.fm/s/7d6e8141",
-            "published_date": "2025-04-20 19:05:08.034869",
+            "name": "Google DeepMind Blog",
+            "link": "https://deepmind.google/discover/blog/discovering-novel-algorithms-with-alphatensor/",
+            "published_date": "2025-04-27 17:10:35.901738",
             "author": ""
           }
         ],
         "source_count": 1,
-        "relevance_score": 0.7512485400048371,
+        "relevance_score": 0.9236271146485888,
+        "keywords": null,
+        "categories": null,
+        "sentiment_analysis": {
+          "overall_sentiment": "positive",
+          "mean_polarity": 0.781,
+          "sentiment_variance": 0.0,
+          "consensus_level": "high",
+          "has_divergent_views": false,
+          "most_positive_source": "Google DeepMind Blog",
+          "most_negative_source": "Google DeepMind Blog",
+          "sources_sentiment": [
+            {
+              "source_name": "Google DeepMind Blog",
+              "sentiment": "neutral",
+              "polarity": 0.0,
+              "subjectivity": 0.0,
+              "confidence": 1.0
+            }
+          ]
+        }
+      },
+      {
+        "title": "An AI future free of slop",
+        "description": "Stack Overflow CEO Prashanth Chandrasekar sat down with Ryan at HumanX 2025 to talk about how Stack is integrating AI into its public platform, the enormous importance of a high-quality knowledge base in your AI journey, how AI tools are empowering junior developers to build better software, and much more.",
+        "primary_link": "https://stackoverflow.blog/2025/03/21/an-ai-future-free-of-slop/",
+        "read_time": 1,
+        "primary_source": "Stack Overflow Blog",
+        "sources": [
+          {
+            "name": "Stack Overflow Blog",
+            "link": "https://stackoverflow.blog/2025/03/21/an-ai-future-free-of-slop/",
+            "published_date": "2025-04-27 17:10:34.543565",
+            "author": ""
+          }
+        ],
+        "source_count": 1,
+        "relevance_score": 0.9163585651825271,
+        "keywords": null,
+        "categories": null,
+        "sentiment_analysis": {
+          "overall_sentiment": "positive",
+          "mean_polarity": 0.8271,
+          "sentiment_variance": 0.0,
+          "consensus_level": "high",
+          "has_divergent_views": false,
+          "most_positive_source": "Stack Overflow Blog",
+          "most_negative_source": "Stack Overflow Blog",
+          "sources_sentiment": [
+            {
+              "source_name": "Stack Overflow Blog",
+              "sentiment": "neutral",
+              "polarity": 0.0,
+              "subjectivity": 0.0,
+              "confidence": 1.0
+            }
+          ]
+        }
+      },
+      {
+        "title": "‘Don’t ask what AI can do for us, ask what it is doing to us’: are ChatGPT and co harming human intelligence?",
+        "description": "Recent research suggests our brain power is in decline. Is offloading our cognitive work to AI driving this trend?Imagine for a moment you are a child in 1941, sitting the common entrance exam for public schools with nothing but a pencil and paper. You read the following: “Write, for no more than a quarter of an hour, about a British author.”Today, most of us wouldn’t need 15 minutes to ponder such a question. We’d get the answer instantly by turning to AI tools such as Google Gemini, ChatGPT or Siri. Offloading cognitive effort to artificial intelligence has become second nature, but with mounting evidence that human intelligence is declining, some experts fear this impulse is driving the trend. Continue reading...",
+        "primary_link": "https://www.theguardian.com/technology/2025/apr/19/dont-ask-what-ai-can-do-for-us-ask-what-it-is-doing-to-us-are-chatgpt-and-co-harming-human-intelligence",
+        "read_time": 1,
+        "primary_source": "Artificial intelligence (AI) | The Guardian",
+        "sources": [
+          {
+            "name": "Artificial intelligence (AI) | The Guardian",
+            "link": "https://www.theguardian.com/technology/2025/apr/19/dont-ask-what-ai-can-do-for-us-ask-what-it-is-doing-to-us-are-chatgpt-and-co-harming-human-intelligence",
+            "published_date": "2025-04-27 17:10:34.733729",
+            "author": ""
+          }
+        ],
+        "source_count": 1,
+        "relevance_score": 0.9158990173109386,
+        "keywords": null,
+        "categories": null,
+        "sentiment_analysis": {
+          "overall_sentiment": "positive",
+          "mean_polarity": 0.3204,
+          "sentiment_variance": 0.0,
+          "consensus_level": "high",
+          "has_divergent_views": false,
+          "most_positive_source": "Artificial intelligence (AI) | The Guardian",
+          "most_negative_source": "Artificial intelligence (AI) | The Guardian",
+          "sources_sentiment": [
+            {
+              "source_name": "Artificial intelligence (AI) | The Guardian",
+              "sentiment": "positive",
+              "polarity": 0.4767,
+              "subjectivity": 0.43700000000000006,
+              "confidence": 0.8534
+            }
+          ]
+        }
+      },
+      {
+        "title": "To get ahead with AI, fine-tune your data strategy",
+        "description": "In the first episode of our new podcast series, Leaders of Code, we sat down with Don Woodlock, Head of Global Healthcare Solutions at InterSystems, and Stack Overflow CEO Prashanth Chandrasekar to discuss data strategy's critical role in AI development.",
+        "primary_link": "https://stackoverflow.blog/2025/03/17/to-get-ahead-with-ai-fine-tune-your-data-strategy/",
+        "read_time": 1,
+        "primary_source": "Stack Overflow Blog",
+        "sources": [
+          {
+            "name": "Stack Overflow Blog",
+            "link": "https://stackoverflow.blog/2025/03/17/to-get-ahead-with-ai-fine-tune-your-data-strategy/",
+            "published_date": "2025-04-27 17:10:34.543624",
+            "author": ""
+          },
+          {
+            "name": "Stack Overflow Blog",
+            "link": "https://stackoverflow.blog/2025/03/13/junky-data-is-like-an-out-of-tune-guitar-it-prevents-ai-harmony/",
+            "published_date": "2025-04-27 17:10:34.543671",
+            "author": ""
+          }
+        ],
+        "source_count": 2,
+        "relevance_score": 0.8484986523487209,
         "keywords": null,
         "categories": null,
         "sentiment_analysis": {
           "overall_sentiment": "negative",
-          "mean_polarity": -0.9782,
+          "mean_polarity": -0.1531,
           "sentiment_variance": 0.0,
           "consensus_level": "high",
           "has_divergent_views": false,
-          "most_positive_source": "Practical AI",
-          "most_negative_source": "Practical AI",
+          "most_positive_source": "Stack Overflow Blog",
+          "most_negative_source": "Stack Overflow Blog",
           "sources_sentiment": [
             {
-              "source_name": "Practical AI",
+              "source_name": "Stack Overflow Blog",
+              "sentiment": "neutral",
+              "polarity": 0.0,
+              "subjectivity": 0.0,
+              "confidence": 1.0
+            },
+            {
+              "source_name": "Stack Overflow Blog",
+              "sentiment": "neutral",
+              "polarity": 0.0,
+              "subjectivity": 0.0,
+              "confidence": 1.0
+            }
+          ]
+        }
+      },
+      {
+        "title": "Gemini breaks new ground: a faster model, longer context and AI agents",
+        "description": "We’re introducing a series of updates across the Gemini family of models, including the new 1.5 Flash, our lightweight model for speed and efficiency, and Project Astra, our vision for the future of AI assistants.",
+        "primary_link": "https://deepmind.google/discover/blog/gemini-breaks-new-ground-a-faster-model-longer-context-and-ai-agents/",
+        "read_time": 1,
+        "primary_source": "Google DeepMind Blog",
+        "sources": [
+          {
+            "name": "Google DeepMind Blog",
+            "link": "https://deepmind.google/discover/blog/gemini-breaks-new-ground-a-faster-model-longer-context-and-ai-agents/",
+            "published_date": "2025-04-27 17:10:35.900996",
+            "author": ""
+          }
+        ],
+        "source_count": 1,
+        "relevance_score": 0.8318667942680986,
+        "keywords": null,
+        "categories": null,
+        "sentiment_analysis": {
+          "overall_sentiment": "positive",
+          "mean_polarity": 0.5423,
+          "sentiment_variance": 0.0,
+          "consensus_level": "high",
+          "has_divergent_views": false,
+          "most_positive_source": "Google DeepMind Blog",
+          "most_negative_source": "Google DeepMind Blog",
+          "sources_sentiment": [
+            {
+              "source_name": "Google DeepMind Blog",
+              "sentiment": "neutral",
+              "polarity": 0.0,
+              "subjectivity": 0.0,
+              "confidence": 1.0
+            }
+          ]
+        }
+      },
+      {
+        "title": "DeepMind’s latest research at NeurIPS 2022",
+        "description": "NeurIPS is the world’s largest conference in artificial intelligence (AI) and machine learning (ML), and we’re proud to support the event as Diamond sponsors, helping foster the exchange of research advances in the AI and ML community. Teams from across DeepMind are presenting 47 papers, including 35 external collaborations in virtual panels and poster sessions.",
+        "primary_link": "https://deepmind.google/discover/blog/deepminds-latest-research-at-neurips-2022/",
+        "read_time": 1,
+        "primary_source": "Google DeepMind Blog",
+        "sources": [
+          {
+            "name": "Google DeepMind Blog",
+            "link": "https://deepmind.google/discover/blog/deepminds-latest-research-at-neurips-2022/",
+            "published_date": "2025-04-27 17:10:35.901656",
+            "author": ""
+          }
+        ],
+        "source_count": 1,
+        "relevance_score": 0.8210528681154466,
+        "keywords": null,
+        "categories": null,
+        "sentiment_analysis": {
+          "overall_sentiment": "positive",
+          "mean_polarity": 0.91,
+          "sentiment_variance": 0.0,
+          "consensus_level": "high",
+          "has_divergent_views": false,
+          "most_positive_source": "Google DeepMind Blog",
+          "most_negative_source": "Google DeepMind Blog",
+          "sources_sentiment": [
+            {
+              "source_name": "Google DeepMind Blog",
               "sentiment": "neutral",
               "polarity": 0.0,
               "subjectivity": 0.0,
@@ -386,48 +412,109 @@
       }
     ],
     "papers": [],
-    "repos": [],
+    "repos": [
+      {
+        "name": "khoj-ai/khoj",
+        "link": "https://github.com/khoj-ai/khoj",
+        "summary": "Your AI second brain. Self-hostable. Get answers from the web or your docs. Build custom agents, schedule automations, do deep research. Turn any online or local LLM into your personal, autonomous AI (gpt, claude, gemini, llama, qwen, mistral). Get started - free.",
+        "source": "GitHub",
+        "stars": "29681",
+        "forks": null,
+        "contributors": null,
+        "relevance_score": 1.0,
+        "recent_activity": null,
+        "categories": null
+      },
+      {
+        "name": "yt-dlp/yt-dlp",
+        "link": "https://github.com/yt-dlp/yt-dlp",
+        "summary": "A feature-rich command-line audio/video downloader",
+        "source": "GitHub",
+        "stars": "109734",
+        "forks": null,
+        "contributors": null,
+        "relevance_score": 1.0,
+        "recent_activity": null,
+        "categories": null
+      },
+      {
+        "name": "coqui-ai/TTS",
+        "link": "https://github.com/coqui-ai/TTS",
+        "summary": "🐸💬 - a deep learning toolkit for Text-to-Speech, battle-tested in research and production",
+        "source": "GitHub",
+        "stars": "39630",
+        "forks": null,
+        "contributors": null,
+        "relevance_score": 1.0,
+        "recent_activity": null,
+        "categories": null
+      },
+      {
+        "name": "skypilot-org/skypilot",
+        "link": "https://github.com/skypilot-org/skypilot",
+        "summary": "SkyPilot: Run AI and batch jobs on any infra (Kubernetes or 16+ clouds). Get unified execution, cost savings, and high GPU availability via a simple interface.",
+        "source": "GitHub",
+        "stars": "7893",
+        "forks": null,
+        "contributors": null,
+        "relevance_score": 1.0,
+        "recent_activity": null,
+        "categories": null
+      },
+      {
+        "name": "emmabostian/developer-portfolios",
+        "link": "https://github.com/emmabostian/developer-portfolios",
+        "summary": "A list of developer portfolios for your inspiration",
+        "source": "GitHub",
+        "stars": "13741",
+        "forks": null,
+        "contributors": null,
+        "relevance_score": 1.0,
+        "recent_activity": null,
+        "categories": null
+      }
+    ],
     "sentiment_summary": {
       "overall_sentiment": "positive",
       "content_count": 10,
       "sentiment_distribution": {
-        "positive": 9,
+        "positive": 8,
         "neutral": 0,
-        "negative": 1
+        "negative": 2
       },
       "sentiment_percentages": {
-        "positive": 90.0,
+        "positive": 80.0,
         "neutral": 0.0,
-        "negative": 10.0
+        "negative": 20.0
       }
     },
-    "timestamp": "2025-04-20T19:05:20.230128",
+    "timestamp": "2025-04-27T17:10:43.052032",
     "metadata": {
       "source": "enhanced_curator",
       "request": {
         "source": "curate.py",
-        "timestamp": "2025-04-20T19:05:00.301376"
+        "timestamp": "2025-04-27T17:10:34.261914"
       }
     }
   },
   "insights": {
     "overall_sentiment": "positive",
     "sentiment_distribution": {
-      "positive": 9,
+      "positive": 8,
       "neutral": 0,
-      "negative": 1
+      "negative": 2
     },
     "most_positive_item": {
-      "title": "Open challenges in LLM research",
-      "polarity": 0.9997
+      "title": "DeepMind’s latest research at ICLR 2023",
+      "polarity": 0.9545
     },
     "most_negative_item": {
-      "title": "Exposing the deception of DeepFakes",
-      "polarity": -0.9782
+      "title": "With ‘AI slop’ distorting our reality, the world is sleepwalking into disaster | Nesrine Malik",
+      "polarity": -0.9584
     }
   },
   "metadata": {
-    "timestamp": "2025-04-20T19:05:20.313946",
+    "timestamp": "2025-04-27T17:10:43.062334",
     "version": "1.0"
   }
 }

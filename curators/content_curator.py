@@ -4,9 +4,11 @@ import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
-from models.content_models import ContentSource, EnhancedNewsItem, EnhancedResearchPaper, EnhancedRepo, CuratedContent, NewsItem
+from models.content_models import ContentSource, EnhancedNewsItem, EnhancedResearchPaper, EnhancedRepo, CuratedContent, NewsItem, Repo, ResearchPaper
 from curators.base_curator import ContentCurator
 from utils.clustering import NewsClusteringService
+from services.github_service import GitHubScanner
+from services.research_service import ResearchService
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,14 @@ class EnhancedContentCurator(ContentCurator):
         
         # Inicializa serviço de clustering
         self.news_clustering = NewsClusteringService(self.similarity_threshold)
+        
+        # Inicializa serviços de GitHub e pesquisa
+        self.github_url = config.get('github_python_url', 'https://github.com/trending/python?since=daily&spoken_language_code=en')
+        self.github_service = GitHubScanner(self.github_url, top_n=config.get('max_repos', 5))
+        self.research_service = ResearchService(config)
+        
         logger.info(f"Curador de conteúdo aprimorado inicializado (threshold: {self.similarity_threshold})")
+        logger.info(f"Serviço GitHub inicializado com URL: {self.github_url}")
     
     async def close(self):
         """Fecha recursos e conexões assíncronas"""
@@ -94,6 +103,56 @@ class EnhancedContentCurator(ContentCurator):
             enhanced_news.append(enhanced_item)
             
         return enhanced_news
+    
+    async def _get_repositories(self, request: Dict) -> List[Repo]:
+        """
+        Sobrescreve o método base para obter repositórios
+        
+        Args:
+            request: Parâmetros para a curadoria
+            
+        Returns:
+            Lista de Repo
+        """
+        try:
+            max_repos = request.get('max_repos', 5)
+            keywords = request.get('keywords', None)
+            
+            logger.info(f"Obtendo repositórios com max_repos={max_repos}, keywords={keywords}")
+            
+            # Usa o serviço GitHub para obter repositórios
+            repos = await self.github_service.get_trending_repos(keywords)
+            
+            # Limita ao número máximo solicitado
+            return repos[:max_repos]
+        except Exception as e:
+            logger.error(f"Erro ao obter repositórios: {str(e)}", exc_info=True)
+            return []
+    
+    async def _get_research_papers(self, request: Dict) -> List[ResearchPaper]:
+        """
+        Sobrescreve o método base para obter papers de pesquisa
+        
+        Args:
+            request: Parâmetros para a curadoria
+            
+        Returns:
+            Lista de ResearchPaper
+        """
+        try:
+            max_papers = request.get('max_papers', 5)
+            keywords = request.get('keywords', None)
+            
+            logger.info(f"Obtendo papers com max_papers={max_papers}, keywords={keywords}")
+            
+            # Usa o serviço de pesquisa para obter papers
+            papers = await self.research_service.get_research_papers(keywords)
+            
+            # Limita ao número máximo solicitado
+            return papers[:max_papers]
+        except Exception as e:
+            logger.error(f"Erro ao obter papers de pesquisa: {str(e)}", exc_info=True)
+            return []
         
     async def get_curated_content(self, request: Dict) -> CuratedContent:
         """
@@ -191,13 +250,12 @@ class EnhancedContentCurator(ContentCurator):
         max_papers = request.get('max_papers', 5)
         max_repos = request.get('max_repos', 5)
         
-        # Usa métodos da classe base para coletar repos, papers e eventos
-        # Mas precisamos converter os resultados para usar o tipo correto de objeto
+        # Coleta papers e repos usando os métodos sobrescritos
+        base_papers = await self._get_research_papers(request)
+        base_repos = await self._get_repositories(request)
         
-        # Para papers
-        base_papers = await super()._get_research_papers(request)
+        # Converte papers para EnhancedResearchPaper
         enhanced_papers = []
-        
         for paper in base_papers[:max_papers]:
             enhanced_paper = EnhancedResearchPaper(
                 title=paper.title,
@@ -213,10 +271,8 @@ class EnhancedContentCurator(ContentCurator):
             )
             enhanced_papers.append(enhanced_paper)
         
-        # Para repos
-        base_repos = await super()._get_repositories(request)
+        # Converte repos para EnhancedRepo
         enhanced_repos = []
-        
         for repo in base_repos[:max_repos]:
             enhanced_repo = EnhancedRepo(
                 name=repo.name,
