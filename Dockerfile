@@ -17,3 +17,11 @@ EXPOSE 8000
 
 # Comando para execução
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+# Script de inicialização
+COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Use este script como ponto de entrada
+ENTRYPOINT ["/docker-entrypoint.sh"]

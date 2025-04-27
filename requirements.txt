@@ -1,8 +1,13 @@
 # Web framework and API
 fastapi==0.109.2
 uvicorn==0.27.1
-pydantic==1.10.13  # Using older version for Python 3.13 compatibility
+pydantic==1.10.13
 httpx==0.26.0
+
+# Database
+sqlalchemy==2.0.27
+psycopg2-binary==2.9.9
+alembic==1.13.1
 
 # Data processing
 pandas==2.2.0
@@ -13,12 +18,16 @@ scikit-learn==1.4.0
 beautifulsoup4==4.12.2
 requests==2.31.0
 feedparser==6.0.10
+aiohttp==3.9.3
 
 # NLP and sentiment analysis
 nltk==3.8.1
 textblob==0.17.1
 transformers==4.38.1
-# torch package temporarily removed until Python 3.13 compatible version is available
+
+# Job scheduling
+apscheduler==3.10.4
+python-crontab==3.0.0
 
 # Development tools
 pytest==7.4.3

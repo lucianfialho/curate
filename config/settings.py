@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 from functools import lru_cache
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings
+from pydantic import BaseSettings
 
 class SentimentConfig(BaseModel):
     """Configuration for sentiment analysis."""
@@ -10,7 +10,27 @@ class SentimentConfig(BaseModel):
 
 class Settings(BaseSettings):
     """Application settings using Pydantic BaseSettings."""
+    # Configurações de Banco de Dados
+    DATABASE_URL: str = Field(
+        default="postgresql://postgres:postgres@localhost:5432/ailert",
+        description="URL de conexão com o banco de dados"
+    )
     
+    DB_POOL_SIZE: int = Field(
+        default=5,
+        description="Tamanho do pool de conexões com o banco"
+    )
+    
+    DB_MAX_OVERFLOW: int = Field(
+        default=10,
+        description="Número máximo de conexões adicionais no pool"
+    )
+    
+    # Configuração de retenção de dados
+    DATA_RETENTION_DAYS: int = Field(
+        default=90,
+        description="Número de dias para retenção de dados"
+    )
     # RSS feed settings
     rss_feeds: List[str] = Field(
         default=[
