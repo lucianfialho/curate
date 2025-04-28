@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     """Application settings using Pydantic BaseSettings."""
     # Configurações de Banco de Dados
     DATABASE_URL: str = Field(
-        default="postgresql://postgres:postgres@localhost:5432/ailert",
+        default="postgresql://postgres:postgres@db:5432/ailert",  # Use 'db' como host
         description="URL de conexão com o banco de dados"
     )
     
